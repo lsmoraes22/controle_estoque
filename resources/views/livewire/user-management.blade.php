@@ -1,37 +1,37 @@
-<div class="min-h-screen bg-gray-200 p-4 font-mono text-black">
+<div class="{{config('tailwind.divContainer')}}">
     @livewire('nav')
     @if (session()->has('message'))
-        <div class="bg-green-300 border border-green-600 p-2 mb-4">
+        <div class="{{config('tailwind.divMassage')}}">
             {{ session('message') }}
         </div>
     @elseif (session()->has('messageError'))
-        <div class="bg-red-300 border border-red-600 p-2 mb-4">
+        <div class="{{config('tailwind.divmessageError')}}">
             {{ session('messageError') }}
         </div>
     @endif
-    <div class="bg-zinc-300 border border-gray-600 p-4 shadow-lg" id="userForm">
+    <div class="{{config('tailwind.divFormContainer1')}}" id="userId" >
         @if ($screenAction == 'create' || $screenAction == 'edit')
-            <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 pt-40 overflow-scroll">
-                <div class="bg-zinc-300 w-2/3 p-4 mt-4">
-                    <div class="flex justify-end mb-4">
-                        <button wire:click="showTable" class="bg-gray-300 border border-gray-600 px-4 py-2 shadow-inner hover:bg-gray-400">
+            <div class="{{config('tailwind.divFormContainer2')}}">
+                <div class="{{config('tailwind.divFormPanel')}}">
+                    <div class="{{config('tailwind.divFormPanelTop')}}">
+                        <button wire:click="showTable" class="{{config('tailwind.closeButton')}}">
                             <i class="bi bi-x"></i>
                         </button>
                     </div>
                     <form wire:submit.prevent="{{ $screenAction == 'create' ? 'store' : 'update' }}">
-                        <div class="mb-4">
-                            <label class="block">Name</label>
+                        <div class="{{config('tailwind.divInput')}}">
+                            <label class="{{config('tailwind.labelInput')}}">Name</label>
                             <input type="text" wire:model="name" class="border border-gray-600 p-2 w-full">
                             @error('name') <span class="error">{{ $message }}</span> @enderror
                         </div>
 
-                        <div class="mb-4">
+                        <div class="{{config('tailwind.divInput')}}">
                             <label class="block">Email</label>
                             <input type="email" wire:model="email" class="border border-gray-600 p-2 w-full">
                             @error('email') <span class="error">{{ $message }}</span> @enderror
                         </div>
 
-                        <div class="mb-4">
+                        <div class="{{config('tailwind.divInput')}}">
                             <label class="block">Sector</label>
                             <select wire:model="sector_id" class="border border-gray-600 p-2 w-full">
                                 <option value="">Select Sector</option>
@@ -42,22 +42,22 @@
                             @error('sector_id') <span class="error">{{ $message }}</span> @enderror
                         </div>
 
-                        <div class="mb-4">
+                        <div class="{{config('tailwind.divInput')}}">
                             <label class="">Enabled</label>
                             <input type="checkbox" wire:model="enabled" class="border border-gray-600 p-2">
                         </div>
-                        <div class="mb-4">
+                        <div class="{{config('tailwind.divInput')}}">
                             <label class="block">Level</label>
                             <input type="number" wire:model="level" class="border border-gray-600 p-2 w-full">
                             @error('level') <span class="error">{{ $message }}</span> @enderror
                         </div>
-                        <div class="mb-4">
+                        <div class="{{config('tailwind.divInput')}}">
                             <label class="block">Password</label>
                             <input type="password" wire:model="password" class="border border-gray-600 p-2 w-full">
                             @error('password') <span class="error">{{ $message }}</span> @enderror
                         </div>
 
-                        <div class="mb-4">
+                        <div class="{{config('tailwind.divInput')}}">
                             <label class="block">Confirm Password</label>
                             <input type="password" wire:model="password_confirmation" class="border border-gray-600 p-2 w-full">
                             @error('password_confirmation') <span class="error">{{ $message }}</span> @enderror
@@ -70,36 +70,36 @@
                 </div>
             </div>
         @else
-            <div class="mb-4">
+            <div class="{{config('tailwind.divInput')}}">
                 <button wire:click="create" class="bg-gray-300 border border-gray-600 px-4 py-2 shadow-inner hover:bg-gray-400">
                     <i class="bi bi-plus"></i> Add User
                 </button>
             </div>
-            <div class="mb-4">
+            <div class="{{config('tailwind.divInput')}}">
                 <input type="text" wire:model.live="search" placeholder="Search by name, email or sector" class="border border-gray-600 p-2 w-full"><!---->
             </div>
-            <table class="min-w-full border border-gray-600">
+            <table class="{{config('tailwind.table')}}">
                 <thead>
-                    <tr class="bg-gray-300">
-                        <th class="border border-gray-600 p-1">Name</th>
-                        <th class="border border-gray-600 p-1">Email</th>
-                        <th class="border border-gray-600 p-1">Enabled</th>
-                        <th class="border border-gray-600 p-1">Sector</th>
-                        <th class="border border-gray-600 p-1 w-32">Actions</th>
+                    <tr class="{{config('tailwind.trth')}}">
+                        <th class="{{config('tailwind.td')}}">Name</th>
+                        <th class="{{config('tailwind.td')}}">Email</th>
+                        <th class="{{config('tailwind.td')}}">Enabled</th>
+                        <th class="{{config('tailwind.td')}}">Sector</th>
+                        <th class="{{config('tailwind.td')}} w-32">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($users as $user)
-                        <tr class="bg-gray-200">
-                            <td class="border border-gray-600 p-1">{{ $user->name }}</td>
-                            <td class="border border-gray-600 p-1">{{ $user->email }}</td>
-                            <td class="border border-gray-600 p-1">{{ $user->enabled ? 'Yes' : 'No' }}</td>
-                            <td class="border border-gray-600 p-1">{{ $user->sector->sector }}</td>
-                            <td class="border border-gray-600 p-1 flex justify-center space-x-1">
-                                <button wire:click="edit({{ $user->id }})" class="bg-gray-300 border border-gray-600 px-2 py-1 shadow-inner hover:bg-gray-400">
+                        <tr class="{{config('tailwind.trtd')}}">
+                            <td class="{{config('tailwind.td')}}">{{ $user->name }}</td>
+                            <td class="{{config('tailwind.td')}}">{{ $user->email }}</td>
+                            <td class="{{config('tailwind.td')}}">{{ $user->enabled ? 'Yes' : 'No' }}</td>
+                            <td class="{{config('tailwind.td')}}">{{ $user->sector->sector }}</td>
+                            <td class="{{config('tailwind.td')}} space-x-1">
+                                <button wire:click="edit({{ $user->id }})" class="{{config('tailwind.button')}}">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button wire:click="confirmDeletion({{ $user->id }})" class="bg-gray-300 border border-gray-600 px-2 py-1 shadow-inner hover:bg-gray-400">
+                                <button wire:click="confirmDeletion({{ $user->id }})" class="{{config('tailwind.button')}}">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </td>

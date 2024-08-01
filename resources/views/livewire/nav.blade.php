@@ -4,7 +4,7 @@
         <li class="nav-item"><a href="users" class="nav-link">Users</a></li>
         <li class="nav-item"><a href="sectors" class="nav-link">Sectors</a></li>
         <li class="nav-item"><a href="permissions" class="nav-link">Permissions</a></li>
-        <li class="nav-item"><a href="contact" class="nav-link">Contact</a></li>
+        <li class="nav-item"><a href="suppliers" class="nav-link">Suppliers</a></li>
         <li class="nav-item">
             <form method="POST" action="{{ route('logout') }}" style="display: inline;">
                 @csrf

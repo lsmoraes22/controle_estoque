@@ -15,9 +15,9 @@ use App\Http\Middleware as M;
         Route::get('/users', Wire\UserManagement::class)->name('users.index')->middleware( M\CheckSectorPermission::class ); 
         Route::get('/sectors', Wire\SectorManagement::class)->name('sectors.index')->middleware(M\CheckSectorPermission::class); 
         Route::get('/permissions', Wire\SectorPermissionManagement::class)->name('permissions.index')->middleware(M\CheckSectorPermission::class );
+        Route::get('/suppliers', Wire\SupplierManagement::class)->name('suppliers.index')->middleware(M\CheckSectorPermission::class );
     });
 // });
-
 
 
 // Rotas de login e logout
