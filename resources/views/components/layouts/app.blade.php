@@ -11,7 +11,21 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    {{ $slot }}
+<div class="{{config('tailwind.divContainer')}}">
+    @livewire('nav')
+    @if (session()->has('message'))
+        <div class="{{config('tailwind.divMassage')}}">
+            {{ session('message') }}
+        </div>
+    @elseif (session()->has('messageError'))
+        <div class="{{config('tailwind.divmessageError')}}">
+            {{ session('messageError') }}
+        </div>
+    @endif
+    <div class="{{config('tailwind.divFormContainer1')}}" id="userId" >
+        {{$slot}}
+    </div>
+</div>
     @livewireScripts
 </body>
 </html>
