@@ -1,6 +1,6 @@
 <div>
     @if ($screenAction == 'create' || $screenAction == 'edit')
-            <div class="{{config('tailwind.divFormContainer2')}}">
+        <div class="{{config('tailwind.divFormContainer2')}}">
             <div class="{{config('tailwind.divFormPanel')}}">
                 <div class="{{config('tailwind.divFormPanelTop')}}">
                     <button wire:click="showTable" class="{{config('tailwind.closeButton')}}">

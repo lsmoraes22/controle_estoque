@@ -1,24 +1,15 @@
-<div class="min-h-screen bg-gray-200 p-4 font-mono text-black">
-    @livewire('nav')
-    @if (session()->has('message'))
-        <div class="bg-green-300 border border-green-600 p-2 mb-4">
-            {{ session('message') }}
-        </div>
-    @elseif (session()->has('messageError'))
-        <div class="bg-red-300 border border-red-600 p-2 mb-4">
-            {{ session('messageError') }}
-        </div>
-    @endif
-
-    <div class="bg-zinc-300 border border-gray-600 p-4 shadow-lg" id="sectorPermissionForm">
-        @if ($screenAction == 'create' || $screenAction == 'edit')
-            <div class="flex justify-end mb-4">
-                <button wire:click="showTable" class="bg-gray-300 border border-gray-600 px-4 py-2 shadow-inner hover:bg-gray-400">
-                    <i class="bi bi-x"></i>
-                </button>
+<div>
+    @if ($screenAction == 'create' || $screenAction == 'edit')
+        <div class="{{config('tailwind.divContainer2')}}" id="sectorPermissionForm">
+            <div class="{{config('tailwind.divFormPanel')}}">
+                <div class="{{config('tailwind.divFormPanelTop')}}">
+                    <button wire:click="showTable" class="{{config('tailwind.closeButton')}}">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
             </div>
             <form wire:submit.prevent="{{ $screenAction == 'create' ? 'store' : 'update' }}">
-                <div class="mb-4">
+                <div class="{{config('tailwind.divInput')}}">
                     <label class="block">Sector</label>
                     <select wire:model="sector_id" class="border border-gray-600 p-2 w-full">
                         <option value="">Select Sector</option>
@@ -29,7 +20,7 @@
                     @error('sector_id') <span class="error">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="mb-4">
+                <div class="{{config('tailwind.divInput')}}">
                     <label class="block">Permission</label>
                     <select wire:model="permission_id" class="border border-gray-600 p-2 w-full">
                         <option value="">Select Permission</option>
@@ -40,12 +31,12 @@
                     @error('permission_id') <span class="error">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="mb-4">
+                <div class="{{config('tailwind.divInput')}}">
                     <label class="block">Level</label>
                     <input type="number" wire:model="level" class="border border-gray-600 p-2 w-full">
                     @error('level') <span class="error">{{ $message }}</span> @enderror
                 </div>
-                <div class="mb-4">
+                <div class="{{config('tailwind.divInput')}}">
                     <label class="block">Read/Write</label>
                     <select wire:model="read_write" class="border border-gray-600 p-2 w-full">
                         <option value="">Select Permission</option>
@@ -54,7 +45,7 @@
                     </select>
                     @error('permission_id') <span class="error">{{ $message }}</span> @enderror
                 </div>
-                <div class="mb-4">
+                <div class="{{config('tailwind.divInput')}}">
                     <label class="">Enabled</label>
                     <input type="checkbox" wire:model="enabled" class="border border-gray-600 p-2">
                 </div>
@@ -63,39 +54,41 @@
                     <i class="bi bi-save"></i> {{ $screenAction == 'create' ? 'Add Permission' : 'Update Permission' }}
                 </button>
             </form>
-        @else
-            <div class="mb-4">
-                <button wire:click="create" class="bg-gray-300 border border-gray-600 px-4 py-2 shadow-inner hover:bg-gray-400">
-                    <i class="bi bi-plus"></i> Add Permission
-                </button>
+        </div>
+    @else
+        <div class="{{config('tailwind.divContainer2')}}" id="sectorPermissionForm">
+            <div class="{{config('tailwind.divInput')}}">
+                <button wire:click="create" class="{{config('tailwind.button')}}">
+                    <i class="bi bi-plus-circle"></i> 
+                </button> Add Permission
             </div>
-            <div class="mb-4">
-                <input type="text" wire:model.live="search" placeholder="Search by sector or permission" class="border border-gray-600 p-2 w-full">
+            <div class="{{config('tailwind.divInput')}}">
+                <input type="text" wire:model.live="search" placeholder="Search by sector or permission" class="{{config('tailwind.searchInput')}}">
             </div>
-            <table class="min-w-full border border-gray-600">
+            <table class="{{config('tailwind.table')}}">
                 <thead>
-                    <tr class="bg-gray-300">
-                        <th class="border border-gray-600 p-1">Sector</th>
-                        <th class="border border-gray-600 p-1">Permission</th>
-                        <th class="border border-gray-600 p-1">Level</th>
-                        <th class="border border-gray-600 p-1">Read/Write</th>
-                        <th class="border border-gray-600 p-1">Enabled</th>
-                        <th class="border border-gray-600 p-1  w-32 ">Actions</th>
+                    <tr class="{{config('tailwind.trth')}}">
+                        <th class="{{config('tailwind.td')}}">Sector</th>
+                        <th class="{{config('tailwind.td')}}">Permission</th>
+                        <th class="{{config('tailwind.td')}}">Level</th>
+                        <th class="{{config('tailwind.td')}}">Read/Write</th>
+                        <th class="{{config('tailwind.td')}}">Enabled</th>
+                        <th class="{{config('tailwind.td')}}  w-32 ">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($sectorPermissions as $sectorPermission)
                         <tr class="bg-gray-200">
-                            <td class="border border-gray-600 p-1">{{ $sectorPermission->sector->sector }}</td>
-                            <td class="border border-gray-600 p-1">{{ $sectorPermission->permission->route }}</td>
-                            <td class="border border-gray-600 p-1">{{ $sectorPermission->level }}</td>
-                            <td class="border border-gray-600 p-1">{{ $sectorPermission->read_write }}</td>
-                            <td class="border border-gray-600 p-1">{{ $sectorPermission->enabled ? 'Yes' : 'No' }}</td>
-                            <td class="border border-gray-600 p-1 flex justify-center space-x-1">
-                                <button wire:click="edit({{ $sectorPermission->id }})" class="bg-gray-300 border border-gray-600 px-2 py-1 shadow-inner hover:bg-gray-400">
+                            <td class="{{config('tailwind.td')}}">{{ $sectorPermission->sector->sector }}</td>
+                            <td class="{{config('tailwind.td')}}">{{ $sectorPermission->permission->route }}</td>
+                            <td class="{{config('tailwind.td')}}">{{ $sectorPermission->level }}</td>
+                            <td class="{{config('tailwind.td')}}">{{ $sectorPermission->read_write }}</td>
+                            <td class="{{config('tailwind.td')}}">{{ $sectorPermission->enabled ? 'Yes' : 'No' }}</td>
+                            <td class="{{config('tailwind.td')}} space-x-1">
+                                <button wire:click="edit({{ $sectorPermission->id }})" class="{{config('tailwind.button')}}">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button wire:click="confirmDeletion({{ $sectorPermission->id }})" class="bg-gray-300 border border-gray-600 px-2 py-1 shadow-inner hover:bg-gray-400">
+                                <button wire:click="confirmDeletion({{ $sectorPermission->id }})" class="{{config('tailwind.button')}}">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </td>
@@ -103,8 +96,8 @@
                     @endforeach
                 </tbody>
             </table>
-        @endif
-    </div>
+        </div>
+    @endif
     <!-- Modal de Confirmação -->
     @if ($confirmingDeletion)
         <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
