@@ -1,5 +1,5 @@
 <div>
-    @if(session('errorMessage')) 
-        <span class="error">{{ session('errorMessage') }}</span> 
+    @if(session('messageError')) 
+        <span class="error">{{ session('messageError') }}</span> 
     @endif
 </div>

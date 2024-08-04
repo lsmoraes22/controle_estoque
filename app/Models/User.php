@@ -56,4 +56,29 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Sector::class, 'sector_id', 'id');
     }
+    public function getFields()
+    {
+        return $this->getFillable();
+    }
+    public function getTableFields()
+    {
+        return [
+            'name' => 'Name',
+            'email' => 'Email',
+            'enabled' => 'Enabled',
+            'sector_id' => 'Sector',
+            'level' => 'Level',
+        ];
+    }
+
+    public function getForeignField(){
+        return [
+            'sector_id' => [
+                'table' => 'sector', 
+                'field' => 'sector',
+            ]
+        ];
+    }
+    /**/
+
 }

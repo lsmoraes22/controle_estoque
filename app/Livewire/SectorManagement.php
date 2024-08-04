@@ -20,6 +20,14 @@ class SectorManagement extends Component
         'sector' => 'required|string|max:15',
     ];
 
+    public $fields = [];
+
+    public function mount()
+    {
+        $sector = new Sector();
+        $this->fields = $sector->getTableFields();
+    }
+
     public function updatingSearch()
     {
         $this->resetPage();

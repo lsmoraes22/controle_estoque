@@ -28,7 +28,7 @@ class CheckSectorPermission
             ->first(); 
 
         if (!$permission || $permission->pivot->level < $user->level) {
-            session()->flash('errorMessage', 'Your user does not have access to this location!');
+            session()->flash('messageError', 'Your user does not have access to this location!');
             return redirect('/home');
         }
 

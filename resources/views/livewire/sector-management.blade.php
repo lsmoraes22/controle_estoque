@@ -1,14 +1,13 @@
-<div class="min-h-screen bg-gray-200 p-4 font-mono text-black">
-    @livewire('nav')
-    @if (session()->has('message'))
-        <div class="bg-green-300 border border-green-600 p-2 mb-4">
-            {{ session('message') }}
-        </div>
-    @elseif (session()->has('messageError'))
-        <div class="bg-red-300 border border-red-600 p-2 mb-4">
-            {{ session('messageError') }}
-        </div>
-    @endif
+<div>
+    @php
+        $inputs = [
+            [
+                'model' => 'name',
+                'type'  => 'text',
+                'label' => 'Name',
+            ],
+        ]
+    @endphp
 
     <div class="bg-zinc-300 border border-gray-600 p-4 shadow-lg" id="sectorForm">
         @if ($screenAction == 'create' || $screenAction == 'edit')

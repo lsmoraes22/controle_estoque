@@ -26,6 +26,16 @@ class UserManagement extends Component
         'level' => 'integer|min:1|max:10'
     ];
 
+    public $fields = [];
+    public $foreignFields = [];
+
+    public function mount()
+    {
+        $user = new User();
+        $this->fields = $user->getTableFields();
+        $this->foreignFields = $user->getForeignField();
+    }
+    /**/
     public function render()
     {
         $users = User::query()
@@ -38,6 +48,7 @@ class UserManagement extends Component
         return view('livewire.user-management', [
             'users' => $users,
             'sectors' => Sector::all(),
+            'fields' => $this->fields,
         ]);
     }
 
