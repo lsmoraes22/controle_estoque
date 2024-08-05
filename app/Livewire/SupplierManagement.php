@@ -10,7 +10,7 @@ class SupplierManagement extends Component
 {
     use WithPagination;
 
-    public $supplier, $address, $phone1, $phone2, $phone3, $documents, $enable = true, $supplierId;
+    public $supplier, $address, $phone1, $phone2, $phone3, $documents, $enabled = true, $supplierId;
     public $screenAction = 'table';
     public $supplierToDelete = null;
     public $confirmingDeletion = false;
@@ -22,9 +22,17 @@ class SupplierManagement extends Component
         'phone2' => 'nullable|string|max:15',
         'phone3' => 'nullable|string|max:15',
         'documents' => 'required|string|max:15',
-        'enable' => 'boolean'
+        'enabled' => 'boolean'
     ];
+    public $fields = [];
+    public $foreignFields = [];
 
+    public function mount()
+    {
+        $supplier = new Supplier();
+        $this->fields = $supplier->getTableFields();
+        $this->foreignFields = $supplier->getForeignField();
+    }
     public function render()
     {
         $suppliers = Supplier::query()
@@ -57,7 +65,7 @@ class SupplierManagement extends Component
             'phone2' => $this->phone2,
             'phone3' => $this->phone3,
             'documents' => $this->documents,
-            'enable' => $this->enable,
+            'enabled' => $this->enabled,
         ]);
 
         session()->flash('message', 'Supplier created successfully.');
@@ -80,7 +88,7 @@ class SupplierManagement extends Component
         $this->phone2 = $supplier->phone2;
         $this->phone3 = $supplier->phone3;
         $this->documents = $supplier->documents;
-        $this->enable = $supplier->enable;
+        $this->enabled = (bool) $supplier->enabled;
         $this->screenAction = 'edit';
     }
 
@@ -93,7 +101,7 @@ class SupplierManagement extends Component
             'phone2' => 'nullable|string|max:15',
             'phone3' => 'nullable|string|max:15',
             'documents' => 'required|string|max:15',
-            'enable' => 'boolean'
+            'enabled' => 'boolean'
         ]);
 
         $supplier = Supplier::find($this->supplierId);
@@ -103,7 +111,7 @@ class SupplierManagement extends Component
         $supplier->phone2 = $this->phone2;
         $supplier->phone3 = $this->phone3;
         $supplier->documents = $this->documents;
-        $supplier->enable = $this->enable;
+        $supplier->enabled = $this->enabled;
         $supplier->save();
 
         session()->flash('message', 'Supplier updated successfully.');
@@ -126,7 +134,7 @@ class SupplierManagement extends Component
         $this->phone2 = '';
         $this->phone3 = '';
         $this->documents = '';
-        $this->enable = true;
+        $this->enabled = true;
         $this->supplierId = null;
     }
 

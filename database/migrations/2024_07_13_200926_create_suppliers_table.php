@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('phone2',15)->comment('supplier phone 2')->nullable(true);
             $table->string('phone3',15)->comment('supplier phone 3')->nullable(true);
             $table->string('documents',15)->comment('supplier documents')->nullable(false);
-            $table->boolean('enable')->default(true);
+            $table->boolean('enabled')->default(true);
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->timestamp('created_at')->useCurrent();
         });

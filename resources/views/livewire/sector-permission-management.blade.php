@@ -19,8 +19,9 @@
                 'value'   => $sector->id,
             ];
         }
+        
         foreach ($permissions as $permission){
-            $opitions2[] =
+            $options2[] =
             [
                 'caption' => $permission->route,
                 'value' => $permission->id
@@ -66,15 +67,22 @@
             ],
             [
                 'type'  => 'button.submit',
-                'caption' => 'Save User',
+                'caption' => 'Save Permission',
                 'iconClass' => 'bi bi-save',
             ],
         ];
     @endphp
-    @include('components.layouts.headLivewire', ['headLable' => 'Add Permission']) 
-    @include('components.layouts.tableLivewire',['models' => $sectorPermissions])
+    @include('components.layouts.headLivewire', ['headLable' => 'Add Permission', 'placeholderSearch' => 'Search by Sector or Permission']) 
+    @include('components.layouts.tableLivewire',['models' => $sectorPermissions ])
+    @section('messageDeleteConfirmation') 
+    <p>
+        Are you sure you want to take this action. <br> 
+        This cannot be undone! <br>
+        Consider disabling the permission!
+    </p>
+    @endsection
     @if ($confirmingDeletion)
-        @include('components.layouts.deleteConfirmation')
+        @include('components.layouts.deleteConfirmation',['modelToDelete' => $sectorPermissionToDelete ])
     @endif
     @if ($screenAction == 'create' || $screenAction == 'edit')
         @include('components.layouts.formContainer',['title' => 'Permission'])

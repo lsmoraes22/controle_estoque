@@ -20,7 +20,7 @@ class Supplier extends Model
         'phone2',
         'phone3',
         'documents',
-        'enable'
+        'enabled'
     ];
 
     /**
@@ -32,4 +32,33 @@ class Supplier extends Model
         'updated_at',
         'created_at'
     ];
+
+    /**
+     * Summary of getFields
+     * @return string[]
+     */
+    public function getFields()
+    {
+        return $this->getFillable();
+    }
+    /**
+     * Summary of get
+     * @return []
+     */
+    public function getTableFields()
+    {
+        return [
+            'supplier'  => 'Supplier',
+            'address'   => 'Email',
+            'phone1'    => 'Phone3',
+            'phone2'    => 'Phone3',
+            'phone3'    => 'Phone3',
+            'documents' => 'Documents',
+            'enabled'   => 'Enabled',
+        ];
+    }
+
+    public function getForeignField(){
+        return [];
+    }
 }

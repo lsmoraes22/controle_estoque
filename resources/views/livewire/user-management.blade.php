@@ -57,13 +57,20 @@
             ],
         ];
     @endphp
-    @include('components.layouts.headLivewire', ['headLable' => 'Add User'])
+    @include('components.layouts.headLivewire', ['headLable' => 'Add User', 'placeholderSearch' => "Search by sector, name or email "])
     @include('components.layouts.tableLivewire',['models' => $users])
-    @if ($confirmingDeletion)
-        @include('components.layouts.deleteConfirmation')
-    @endif
     @if ($screenAction == 'create' || $screenAction == 'edit')
         @include('components.layouts.formContainer',['title' => 'Create User'])
+    @endif
+    @section('messageDeleteConfirmation') 
+    <p>
+        Are you sure you want to take this action. <br> 
+        This will remove other cascading data and cannot be undone! <br>
+        Consider disabling the user!
+    </p>
+    @endsection
+    @if ($confirmingDeletion) 
+        @include('components.layouts.deleteConfirmation',['modelToDelete' => $userToDelete ])
     @endif
     {{ $users->links() }}
 </div>

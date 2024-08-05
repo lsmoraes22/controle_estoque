@@ -14,7 +14,7 @@
                     <td class="{{ config('tailwind.td') }}">
                         @if($field === 'enabled')
                             {{ $model->$field ? 'Yes' : 'No' }}
-                        @elseif($field === ($foreignFields[$field] ?? null))
+                        @elseif(in_array($field, array_keys($foreignFields)))
                             {{ $model->{$foreignFields[$field]['table']}->{$foreignFields[$field]['field']} }}
                         @else
                             {{ $model->$field }}

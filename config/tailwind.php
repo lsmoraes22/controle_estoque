@@ -18,7 +18,7 @@ return [
     'closeButton'       => 'bg-red-500 border border-red-600 px-2 shadow-inner rounded-md hover:bg-red-400',
     'searchInput'       => 'border border-gray-600 rounded-sm p-1 mt-4 w-full',
     'divInput'          => 'mb-4',
-    'divBlur'           => 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50',
+    'divBlur'           => 'fixed inset-0 flex items-center justify-center z-50',
     'divAlertDelete'    => 'bg-white border border-gray-600 rounded-md p-4 shadow-lg',
     //table
     'table'             => 'min-w-full border border-gray-600 ',

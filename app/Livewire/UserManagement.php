@@ -25,7 +25,6 @@ class UserManagement extends Component
         'enabled' => 'boolean',
         'level' => 'integer|min:1|max:10'
     ];
-
     public $fields = [];
     public $foreignFields = [];
 
@@ -35,7 +34,6 @@ class UserManagement extends Component
         $this->fields = $user->getTableFields();
         $this->foreignFields = $user->getForeignField();
     }
-    /**/
     public function render()
     {
         $users = User::query()

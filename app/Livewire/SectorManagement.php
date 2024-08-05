@@ -10,7 +10,7 @@ class SectorManagement extends Component
 {
     use WithPagination;
 
-    public $sector, $sectorId, $enabled = false;
+    public $sector, $sectorId, $enabled = true;
     public $screenAction = 'table';
     public $sectorToDelete ;
     public $confirmingDeletion;
@@ -21,11 +21,13 @@ class SectorManagement extends Component
     ];
 
     public $fields = [];
+    public $foreignFields = [];
 
     public function mount()
     {
         $sector = new Sector();
         $this->fields = $sector->getTableFields();
+        $this->foreignFields = $sector->getForeignField();
     }
 
     public function updatingSearch()
@@ -38,6 +40,7 @@ class SectorManagement extends Component
             ->paginate(10);
         return view('livewire.sector-management', [
             'sectors' => $sectors
+            //'enabled' => $sectors->enabled
         ]);
     }
 
@@ -72,7 +75,7 @@ class SectorManagement extends Component
             $sector = Sector::find($id);
             $this->sectorId = $sector->id;
             $this->sector = $sector->sector;
-            $this->enabled = $sector->enabled;
+            $this->enabled = (bool) $sector->enabled; // Ensure the enabled value is a boolean
             $this->screenAction = 'edit';
         }
     }

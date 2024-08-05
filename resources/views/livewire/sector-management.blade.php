@@ -2,21 +2,33 @@
     @php
         $inputs = [
             [
-                'model' => 'name',
+                'model' => 'sector',
                 'type'  => 'text',
-                'label' => 'Name',
+                'label' => 'Sector',
+            ],
+            [
+                'model' => 'enabled',
+                'type'  => 'checkbox',
+                'label' => 'Enabled',
             ],
             [
                 'type'  => 'button.submit',
-                'caption' => 'Save User',
+                'caption' => 'Save Sector',
                 'iconClass' => 'bi bi-save',
             ],
         ]
     @endphp
-    @include('components.layouts.headLivewire', ['headLable' => 'Add Sector'])
+    @include('components.layouts.headLivewire', ['headLable' => 'Add Sector', 'placeholderSearch' => 'Search by Sector'])
     @include('components.layouts.tableLivewire',['models' => $sectors])
+    @section('messageDeleteConfirmation') 
+    <p>
+        Are you sure you want to take this action. <br> 
+        This will remove other cascading data and cannot be undone! <br>
+        Consider disabling the Sector!
+    </p>
+    @endsection
     @if ($confirmingDeletion)
-        @include('components.layouts.deleteConfirmation')
+        @include('components.layouts.deleteConfirmation',['modelToDelete' => $sectorToDelete])
     @endif
     @if ($screenAction == 'create' || $screenAction == 'edit')
         @include('components.layouts.formContainer',['title' => 'Sector'])

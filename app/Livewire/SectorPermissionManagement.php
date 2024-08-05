@@ -18,8 +18,7 @@ class SectorPermissionManagement extends Component
     public $sectorPermissionToDelete = null;
     public $confirmingDeletion = false;
     public $search = '';
-    //protected $paginationTheme = 'Tailwind';
-
+    
     protected $rules = [
         'sector_id' => 'required|exists:sectors,id',
         'permission_id' => 'required|exists:permissions,id',
