@@ -56,14 +56,14 @@
                 'iconClass' => 'bi bi-save',
             ],
         ];
-    @endphp    
-    @include('headLivewire', ['headLable' => 'Add User'])
-    @include('tableLivewire',['models' => $users])
+    @endphp
+    @include('components.layouts.headLivewire', ['headLable' => 'Add User'])
+    @include('components.layouts.tableLivewire',['models' => $users])
     @if ($confirmingDeletion)
-        @include('deleteConfirmation')
+        @include('components.layouts.deleteConfirmation')
     @endif
     @if ($screenAction == 'create' || $screenAction == 'edit')
-        @include('formContainer',['title' => 'Create User'])
+        @include('components.layouts.formContainer',['title' => 'Create User'])
     @endif
     {{ $users->links() }}
 </div>

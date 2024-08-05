@@ -27,7 +27,15 @@ class SectorPermissionManagement extends Component
         'enabled' => 'boolean',
         'read_write' => 'required|in:R,W'
     ];
+    public $fields = [];
+    public $foreignFields = [];
 
+    public function mount()
+    {
+        $user = new SectorPermission();
+        $this->fields = $user->getTableFields();
+        $this->foreignFields = $user->getForeignField();
+    }
     public function updatingSearch()
     {
         $this->resetPage();

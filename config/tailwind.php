@@ -11,8 +11,8 @@ return [
     'divMassage'        => 'bg-green-300 border border-green-600 p-2 mb-4',
     'divmessageError'   => 'bg-red-300 border border-red-600 p-2 mb-4',
     'divFormContainer1' => 'bg-zinc-300 border border-gray-600 rounded-md p-4 shadow-lg',
-    'divFormContainer2' => 'flex items-center justify-center z-50 pt-40 overflow-scroll fixed inset-0',
-    'divFormPanel'      => 'bg-opacity-100 bg-gray-300 border border-gray-600 rounded-md w-1/4 mt-4 ',
+    'divFormContainer2' => 'flex items-center justify-center z-50 overflow-y-scroll fixed inset-0 p-8', // 
+    'divFormPanel'      => 'bg-opacity-100 bg-gray-300 border border-gray-600 rounded-md w-96 mt-4 ',
     'divFormPanelTop'   => 'flex justify-end bg-opacity-100 bg-stone-400 border-stone-600 rounded-t-md mb-1',
     'divFormPanelBody'  => 'px-4',
     'closeButton'       => 'bg-red-500 border border-red-600 px-2 shadow-inner rounded-md hover:bg-red-400',

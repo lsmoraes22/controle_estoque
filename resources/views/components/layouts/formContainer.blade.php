@@ -16,8 +16,8 @@
             </button>
         </div>
         <div class="{{ config('tailwind.divFormPanelBody') }}">
-            @include('formLivewire')
-            @yield('formLivewire')
-        </div> 
+            @include('components.layouts.formLivewire')
+            @yield('components.layouts.formLivewire')
+        </div>
     </div>
 </div>

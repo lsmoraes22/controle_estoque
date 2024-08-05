@@ -31,4 +31,21 @@ class Sector extends Model
                     ->withPivot('level', 'enabled','read_write')
                     ->withTimestamps();
     }
+    public function getFields()
+    {
+        return $this->getFillable();
+    }
+    public function getTableFields()
+    {
+        return [
+            'sector' => 'Sector',
+            'enabled' => 'Enabled',
+        ];
+    }
+
+    public function getForeignField(){
+        return [
+            
+        ];
+    }
 }

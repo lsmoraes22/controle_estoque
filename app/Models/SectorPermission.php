@@ -33,4 +33,31 @@ class SectorPermission extends Model
     public function permission() {
         return $this->belongsTo(Permission::class, 'permission_id', 'id');
     }
+    public function getFields()
+    {
+        return $this->getFillable();
+    }
+    public function getTableFields()
+    {
+        return [
+            'sector_id' => 'Sector',
+            'permission_id' => 'Permission',
+            'level' => 'Level',
+            'enabled' => 'Enabled',
+            'read_write' => 'Read/Write',
+        ];
+    }
+
+    public function getForeignField(){
+        return [
+            'sector_id' => [
+                'table' => 'sector', 
+                'field' => 'sector',
+            ],
+            'permission_id' => [
+                'table' => 'permission', 
+                'field' => 'route',
+            ],
+        ];
+    }
 }
