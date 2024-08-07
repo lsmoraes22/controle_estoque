@@ -4,6 +4,7 @@ use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
 use App\Livewire as Wire;
 use App\Http\Middleware as M;
+use App\Services;
 
 // Rotas protegidas pela autenticação
 
@@ -19,6 +20,7 @@ use App\Http\Middleware as M;
     });
 // });
 
+Route::get('/nfe_xml_default', Wire\NfeXmlDefault::class);
 
 // Rotas de login e logout
 Route::middleware('guest')->group(function () {
