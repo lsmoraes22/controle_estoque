@@ -3,8 +3,11 @@
         <div class="alert alert-danger">
             {{ $errorMessage }}
         </div>
+    @elseif ($message)
+        <div class="alert alert-success">
+            {{ $message }}
+        </div>
     @endif
-
     <form wire:submit.prevent="save">
         <div class="form-group">
             <label for="xmlFile">Upload XML File</label>
