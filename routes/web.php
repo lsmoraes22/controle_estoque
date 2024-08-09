@@ -6,6 +6,7 @@ use App\Console\Commands;
 use App\Livewire as Wire;
 use App\Http\Middleware as M;
 use App\Services;
+use Laravel\Passport\Http\Middleware\CreateFreshApiToken;
 
 // Rotas protegidas pela autenticação
 
@@ -21,8 +22,6 @@ use App\Services;
         Route::get('/nfe_xml_default', Wire\NfeXmlDefault::class)->name('nfe_xml_default.index')->middleware(M\CheckSectorPermission::class );
     });
 // });
-
-Route::get('/teste_command', [Commands\ProcessNFeXml::class,'__invoke'] );
 
 // Rotas de login e logout
 Route::middleware('guest')->group(function () {
