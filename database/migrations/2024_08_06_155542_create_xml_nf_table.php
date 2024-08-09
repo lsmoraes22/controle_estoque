@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('idnf',47)->unique()->comment('Identificador da TAG a ser assinada');
             $table->string('versao',4)->nullable(true)->comment('Versão do leiaute');
             $table->string('cUF',2)->nullable(true)->comment('Código da UF do emitente do Documento Fiscal');
-            $table->string('cNF',8)->nullable(true)->comment('Código Numérico que compõe a Chave de Acesso');
+            $table->string('cNF',9)->nullable(true)->comment('Código Numérico que compõe a Chave de Acesso');
             $table->string('natOp',60)->nullable(true)->comment('Descrição da Natureza da Operação');
             $table->string('mod',2)->nullable(true)->comment('Código do Modelo do Documento Fiscal');
             $table->string('serie',3)->nullable(true)->comment('Série do Documento Fiscal');

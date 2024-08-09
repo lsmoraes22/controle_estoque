@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
+use App\Console\Commands;
 use App\Livewire as Wire;
 use App\Http\Middleware as M;
 use App\Services;
@@ -17,10 +18,11 @@ use App\Services;
         Route::get('/sectors', Wire\SectorManagement::class)->name('sectors.index')->middleware(M\CheckSectorPermission::class); 
         Route::get('/permissions', Wire\SectorPermissionManagement::class)->name('permissions.index')->middleware(M\CheckSectorPermission::class );
         Route::get('/suppliers', Wire\SupplierManagement::class)->name('suppliers.index')->middleware(M\CheckSectorPermission::class );
+        Route::get('/nfe_xml_default', Wire\NfeXmlDefault::class)->name('nfe_xml_default.index')->middleware(M\CheckSectorPermission::class );
     });
 // });
 
-Route::get('/nfe_xml_default', Wire\NfeXmlDefault::class);
+Route::get('/teste_command', [Commands\ProcessNFeXml::class,'__invoke'] );
 
 // Rotas de login e logout
 Route::middleware('guest')->group(function () {
