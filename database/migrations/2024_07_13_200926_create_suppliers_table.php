@@ -18,7 +18,9 @@ return new class extends Migration
             $table->string('phone1',15)->comment('supplier phone 1')->nullable(false);
             $table->string('phone2',15)->comment('supplier phone 2')->nullable(true);
             $table->string('phone3',15)->comment('supplier phone 3')->nullable(true);
-            $table->string('documents',15)->comment('supplier documents')->nullable(false);
+            $table->string('email')->comment('supplier documents')->nullable(false)->unique();
+            $table->string('cnpj',18)->comment('cnpj')->nullable(false)->unique();
+            $table->string('ie',15)->comment('inscrição estadual')->nullable(true);
             $table->boolean('enabled')->default(true);
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->timestamp('created_at')->useCurrent();

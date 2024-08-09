@@ -19,7 +19,9 @@ class Supplier extends Model
         'phone1',
         'phone2',
         'phone3',
-        'documents',
+        'email',
+        'cnpj',
+        'ie',
         'enabled'
     ];
 
@@ -49,11 +51,13 @@ class Supplier extends Model
     {
         return [
             'supplier'  => 'Supplier',
-            'address'   => 'Email',
+            'address'   => 'Adress',
             'phone1'    => 'Phone3',
             'phone2'    => 'Phone3',
             'phone3'    => 'Phone3',
-            'documents' => 'Documents',
+            'email'     => 'Email',
+            'cnpj'      => 'CNPJ',
+            'ie'        => 'IE',
             'enabled'   => 'Enabled',
         ];
     }

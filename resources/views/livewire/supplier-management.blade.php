@@ -27,9 +27,19 @@
                 'label' => 'Phone 3',
             ],
             [
-                'model' => 'documents',
+                'model' => 'email',
+                'type'  => 'email',
+                'label' => 'email',
+            ],
+            [
+                'model' => 'cnpj',
                 'type'  => 'text',
-                'label' => 'Documents',
+                'label' => 'CNPJ',
+            ],
+            [
+                'model' => 'ie',
+                'type'  => 'text',
+                'label' => 'IE',
             ],
             [
                 'model' => 'enabled',
