@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use SimpleXMLElement;
-use App\Models\XmlNfHeader;
+use App\Models as M;
 use Illuminate\Support\Facades\Log;
 
 class ProcessNFeXml extends Command
@@ -99,7 +99,44 @@ class ProcessNFeXml extends Command
                 ];
 
                 // Salvando no banco de dados
-                XmlNfHeader::create($headerData);
+                $header = M\XmlNfHeader::create($headerData);
+                // Preencher a tabela xml_nf_body com informações dos produtos
+                foreach ($xml->infNFe->det as $item) {
+                    $bodyData = [
+                        'id' => $header->id, // mesmo ID que o cabeçalho
+                        'nItem' => (string) $item->attributes()->nItem,
+                        'cProd' => (string) $item->prod->cProd,
+                        'cEAN' => (string) $item->prod->cEAN,
+                        'xProd' => (string) $item->prod->xProd,
+                        'NCM' => (string) $item->prod->NCM,
+                        'NVE' => (string) $item->prod->NVE,
+                        'CEST' => (string) $item->prod->CEST,
+                        'indEscala' => (string) $item->prod->indEscala,
+                        'CNPJFab' => (string) $item->prod->CNPJFab,
+                        'cBenef' => (string) $item->prod->cBenef,
+                        'EXTIPI' => (string) $item->prod->EXTIPI,
+                        'CFOP' => (string) $item->prod->CFOP,
+                        'uCom' => (string) $item->prod->uCom,
+                        'qCom' => (string) $item->prod->qCom,
+                        'vUnCom' => (string) $item->prod->vUnCom,
+                        'vProd' => (string) $item->prod->vProd,
+                        'cEANTrib' => (string) $item->prod->cEANTrib,
+                        'uTrib' => (string) $item->prod->uTrib,
+                        'qTrib' => (string) $item->prod->qTrib,
+                        'vUnTrib' => (string) $item->prod->vUnTrib,
+                        'vFrete' => (string) $item->prod->vFrete,
+                        'vSeg' => (string) $item->prod->vSeg,
+                        'vDesc' => (string) $item->prod->vDesc,
+                        'vOutro' => (string) $item->prod->vOutro,
+                        'indTot' => (string) $item->prod->indTot,
+                        'nLote' => (string) $item->prod->nLote,
+                        'qLote' => (string) $item->prod->qLote,
+                        'dFab' => (string) $item->prod->dFab,
+                        'dVal' => (string) $item->prod->dVal,
+                        'cAgreg' => (string) $item->prod->cAgreg,
+                    ];
+                    M\XmlNfBody::create($bodyData);
+                }
                 $directoryOut = ($tipoNF=='compra') ? 'xml/nfs/processado/inbound/' : 'xml/nfs/processado/outbound/';
                 // Mover o arquivo para outra pasta após o processamento, se necessário
                 Storage::move($file, $directoryOut . basename($file));

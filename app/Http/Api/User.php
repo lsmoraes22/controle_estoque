@@ -34,5 +34,15 @@ Class User extends Controller
         return response()->noContent();
     }
 
+    public function enable(int $user)
+    {
+        return U::where('id', $user)->update(['enabled'=>true]);
+    }
+
+    public function disable(int $user)
+    {
+        return U::where('id', $user)->update(['enabled' => false]);
+    }
+
 }
 

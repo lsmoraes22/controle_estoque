@@ -94,6 +94,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('xml_nf_defaults');
+        Schema::dropIfExists('xml_nf_header');
     }
 };
