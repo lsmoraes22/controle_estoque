@@ -35,6 +35,9 @@ class Supplier extends Model
         'created_at'
     ];
 
+    protected $cast = [
+        'enabled' => 'boolean',
+    ];
     /**
      * Summary of getFields
      * @return string[]

@@ -7,9 +7,19 @@ use Illuminate\Http\Request;
 
 Class User extends Controller
 {
-    public function index()
-    { 
-        return U::all();
+    public function index(Request $request )
+    {
+        $query = U::query();
+        if($request->has('name')){
+            $query->where('name', 'LIKE', "%{$request->name}%");
+        } 
+        if($request->has('email')){
+            $query->where('email', 'LIKE', "%{$request->email}%");
+        }
+        if($request->has('sector')){
+            return $query->whereSector_id($request->sector);
+        }
+        return $query->paginate(perPage:5);
     }
     public function store(Request $request )
     {

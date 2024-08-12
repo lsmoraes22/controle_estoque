@@ -19,6 +19,10 @@ class Sector extends Model
         'created_at'
     ];
 
+    protected $cast = [
+        'enabled' => 'boolean',
+    ];
+    
     // Define o relacionamento com a model User
     public function users()
     {

@@ -27,7 +27,7 @@ return new class extends Migration
             $table->unsignedBigInteger('supplier_default_id')->unsigned()->comment('supllier default id')->nullable(false);
             $table->foreign('supplier_default_id')->references('id')->on('suppliers');
             $table->string('abc_curve',1)->comment('abc curve')->nullable(true);
-            $table->boolean('enable')->comment('enable')->default(true);
+            $table->boolean('enabled')->comment('enable')->default(true);
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->timestamp('created_at')->useCurrent();
         });

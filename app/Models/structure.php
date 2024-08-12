@@ -15,5 +15,8 @@ class structure extends Model
 
     // Definindo o tipo das chaves primárias compostas como string
     protected $keyType = 'string';
+    protected $cast = [
+        'enabled' => 'boolean',
+    ];
 
 }

@@ -8,4 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class warehouse extends Model
 {
     use HasFactory;
+    protected $cast = [
+        'enabled' => 'boolean',
+    ];
 }
