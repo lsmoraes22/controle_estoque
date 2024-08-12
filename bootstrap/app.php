@@ -3,7 +3,6 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Laravel\Passport\Http\Middleware\CreateFreshApiToken;
 use App\Http\Middleware as M;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -15,11 +14,6 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         
-    })
-    ->withMiddleware(function (Middleware $middleware) {
-        $middleware->web(append: [
-            CreateFreshApiToken::class,
-        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

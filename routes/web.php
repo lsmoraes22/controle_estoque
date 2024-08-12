@@ -2,11 +2,9 @@
 
 use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
-use App\Console\Commands;
 use App\Livewire as Wire;
 use App\Http\Middleware as M;
-use App\Services;
-use Laravel\Passport\Http\Middleware\CreateFreshApiToken;
+use Illuminate\Http\Request;
 
 // Rotas protegidas pela autenticação
 
@@ -28,3 +26,4 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', Wire\Login::class)->name('login');
     Route::post('/login', [LoginController::class, 'authenticate'])->name('store');
 });
+
