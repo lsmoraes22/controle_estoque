@@ -21,6 +21,8 @@ use Illuminate\Http\Request;
     });
 // });
 
+Route::get('/xml_rules', Wire\RulesEditor::class)->name('xml_rules.index');
+
 // Rotas de login e logout
 Route::middleware('guest')->group(function () {
     Route::get('/login', Wire\Login::class)->name('login');

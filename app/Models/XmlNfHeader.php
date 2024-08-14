@@ -20,6 +20,6 @@ class XmlNfHeader extends Model
         'emitfone', 'emitIE', 'emitIEST', 'emitIM', 'emitCNAE', 'emitCRT', 'destCNPJ', 'destCPF',
         'idEstrangeiro', 'destxNome', 'destemail', 'destxLgr', 'destnro', 'destxCpl', 'destxBairro',
         'destcMun', 'destxMun', 'destUF', 'destCEP', 'destcPais', 'destxPais', 'destfone', 'indIEDest',
-        'destIE', 'destISUF', 'destIM'
+        'destIE', 'destISUF', 'destIM','valid'
     ];
 }

@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('stocks', function (Blueprint $table) {
+        Schema::create('stock', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('reception_id');
-            $table->unsignedBigInteger('product_id');
+            $table->string('product_id',20);
             $table->unsignedBigInteger('supplier_id');
             $table->date('fabrication');
             $table->date('validity');
@@ -31,7 +31,7 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
 
             // Chaves estrangeiras
-            $table->foreign('reception_id')->references('row')->on('receptions');
+            $table->foreign('reception_id')->references('row')->on('reception_body');
             $table->foreign('product_id')->references('id')->on('products');
             $table->foreign('supplier_id')->references('id')->on('suppliers');
             $table->foreign('immob_code')->references('immob_code')->on('immobilizations');

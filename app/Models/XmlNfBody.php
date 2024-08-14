@@ -15,7 +15,7 @@ class XmlNfBody extends Model
         'indEscala', 'CNPJFab', 'cBenef', 'EXTIPI', 'CFOP', 'uCom',
         'qCom', 'vUnCom', 'vProd', 'cEANTrib', 'uTrib', 'qTrib', 
         'vUnTrib', 'vFrete', 'vSeg', 'vDesc', 'vOutro', 'indTot',
-        'nLote', 'qLote', 'dFab', 'dVal', 'cAgreg'
+        'nLote', 'qLote', 'dFab', 'dVal', 'cAgreg', 'valid'
     ];
 
     // Relacionamento um-para-um com XmlNfHeader

@@ -13,8 +13,6 @@ return [
     'divFormContainer1' => 'bg-zinc-300 border border-gray-600 rounded-md p-4 shadow-lg ', //overflow-x-scroll
     'divFormContainer2' => 'absolute flex z-50 overflow-y-scroll justify-center inset-0 ', //p-8 fixed   
     'divFormPanel'      => 'absolute bg-opacity-100 bg-gray-300 border border-gray-600 rounded-md w-96 my-2', // my-4
-    //'divFormContainer2' => 'flex items-center justify-center z-50 fixed inset-0 p-8',
-    //'divFormPanel'      => 'bg-opacity-100 bg-gray-300 border border-gray-600 rounded-md w-96 max-h-screen overflow-y-scroll p-4',
     'divFormPanelTop'   => 'flex justify-end bg-opacity-100 bg-stone-400 border-stone-600 rounded-t-md mb-1',
     'divFormPanelBody'  => 'px-4',
     'closeButton'       => 'bg-red-500 border border-red-600 px-2 shadow-inner rounded-md hover:bg-red-400',

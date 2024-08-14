@@ -44,7 +44,7 @@ return new class extends Migration
             $table->string('dFab', 10)->comment('Data de fabricação/ Produção');
             $table->string('dVal', 10)->comment('Data de validade'); 
             $table->string('cAgreg', 20)->comment('Código de Agregação');
-
+            $table->boolean('valid')->default(false)->comment(  'XML é valido?' );
             $table->timestamp('created_at')->useCurrent();
         });
     }

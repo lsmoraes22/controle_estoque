@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('xml_nf_crosses', function (Blueprint $table) {
+        Schema::create('journals', function (Blueprint $table) {
             $table->id();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            $table->enum('action',['INS','UPD','DEL'])->nullable(false);
+            $table->string('code',3)->nullable(false);
+            $table->enum('moreless',['+','-'])->nullable(false);
+            $table->bigInteger('user_id')->nullable(false);
             $table->timestamp('created_at')->useCurrent();
         });
     }
@@ -23,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('xml_nf_crosses');
+        Schema::dropIfExists('journals');
     }
 };

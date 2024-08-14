@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\ActionLoggable;
  
 class LoginController extends Controller
 {
+    use ActionLoggable;
+
     /**
      * Handle an authentication attempt.
      */
@@ -20,6 +23,7 @@ class LoginController extends Controller
         
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+            $this->logAction('The user login.', ['user_id' => auth()->id()], 'info');
             return redirect()->intended('home');
         }
  
@@ -33,7 +37,7 @@ class LoginController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
+        $this->logAction('The user logout.', ['user_id' => auth()->id()], 'info');
         return redirect('/login');
     }
 }

@@ -84,7 +84,7 @@ return new class extends Migration
             $table->string('destIE', 14)->nullable(true)->comment(  'Inscrição Estadual do destinatario' );
             $table->string('destISUF', 9)->nullable(true)->comment(  'Inscrição na SUFRAMA' );
             $table->string('destIM', 15)->nullable(true)->comment(  'Inscrição Municipal do Prestador de Serviço' );
-            
+            $table->boolean('valid')->default(false)->comment(  'XML é valido?' );
             $table->timestamp('created_at')->useCurrent();
         });
     }

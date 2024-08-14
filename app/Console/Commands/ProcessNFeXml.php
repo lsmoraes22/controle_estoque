@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;   
 use SimpleXMLElement;
 use App\Models as M;
 use Illuminate\Support\Facades\Log;
@@ -19,6 +21,15 @@ class ProcessNFeXml extends Command
     }
     private function handleNF($tipoNF)
     {
+        // Carregar as regras do arquivo JSON ou cache
+        $rules = Cache::remember('nfe_field_rules', now()->addDay(), function () {
+            $rulesPath = storage_path('app/xml/nfs/rules.json');
+            if (Storage::exists('xml/nfs/rules.json')) {
+                return json_decode(Storage::get('xml/nfs/rules.json'), true);
+            }
+            return [];
+        });
+
         $directoryIn = ($tipoNF=='compra') ? 'xml/nfs/inbound' : 'xml/nfs/outbound';
         $files = Storage::files($directoryIn);
         
@@ -26,6 +37,13 @@ class ProcessNFeXml extends Command
             try {
                 $xmlContent = Storage::get($file);
                 $xml = new SimpleXMLElement($xmlContent);
+                // Verificar duplicidade antes de inserir
+                $exists = DB::table('xml_nf_header')->where('idnf', $xml->infNFe->attributes()->Id)->exists();
+                if ($exists) {
+                    Log::error("Duplicate entry found for idnf: " . $xml->infNFe->attributes()->Id);
+                    return false;
+                }
+                $headerValid = $this->validateXml($xml, $rules['header'] ?? []);
                 // Extraindo dados do XML
                 $headerData = [
                     'tipoNF' => $tipoNF,
@@ -96,12 +114,14 @@ class ProcessNFeXml extends Command
                     'destIE' => (string) $xml->infNFe->dest->IE,
                     'destISUF' => (string) $xml->infNFe->dest->ISUF,
                     'destIM' => (string) $xml->infNFe->dest->IM,
+                    'valid' => (int) $headerValid,
                 ];
 
                 // Salvando no banco de dados
                 $header = M\XmlNfHeader::create($headerData);
                 // Preencher a tabela xml_nf_body com informações dos produtos
                 foreach ($xml->infNFe->det as $item) {
+                    $itemValid = !$headerValid ? $headerValid : $this->validateXml($item, $rules['body'] ?? []);
                     $bodyData = [
                         'id' => $header->id, // mesmo ID que o cabeçalho
                         'nItem' => (string) $item->attributes()->nItem,
@@ -134,6 +154,7 @@ class ProcessNFeXml extends Command
                         'dFab' => (string) $item->prod->dFab,
                         'dVal' => (string) $item->prod->dVal,
                         'cAgreg' => (string) $item->prod->cAgreg,
+                        'valid' => (int) $itemValid,
                     ];
                     M\XmlNfBody::create($bodyData);
                 }
@@ -146,4 +167,33 @@ class ProcessNFeXml extends Command
             }
         }
     }
+
+    protected function validateXml($xml, $requiredFields)
+    {
+        foreach ($requiredFields as $key => $value) {
+            if (is_array($value)) {
+                // Se o valor for um array, significa que é um subgrupo
+                if (!isset($xml->$key) || is_null($xml->$key)) {
+                    Log::error("Sub-group $key is missing in XML");
+                    return false; // O subgrupo está faltando
+                }
+                // Recursivamente valida os campos do subgrupo
+                if (!$this->validateXml($xml->$key, $value)) {
+                    Log::error("Validation failed for sub-group $key");
+                    return false;
+                }
+            } else {
+                // Se o valor não for um array, significa que é um campo
+                if (!isset($xml->$key) || empty((string) $xml->$key)) {
+                    if($value){ //se o parametro estiver como verdadeiro
+                        Log::error("Field $key is missing or empty in XML");
+                        return false; // Campo obrigatório está faltando ou está vazio
+                    }
+                }
+            }
+        }
+        return true; // Todos os campos obrigatórios estão presentes
+    }
+    
+
 }
