@@ -37,8 +37,9 @@ class RulesEditor extends Component
         // Salvar as regras editadas no arquivo rules.json
         File::put($this->rulesPath, json_encode($this->rules, JSON_PRETTY_PRINT));
 
-        // Atualizar o cache
-        Cache::put('XmlNfRules', $this->rules);
+        // Limpar a chave de cache antiga e salvar novamente
+        Cache::forget('XmlNfRules');
+        Cache::forever('XmlNfRules', $this->rules);
 
         // Mensagem de sucesso
         session()->flash('message', 'Regras salvas com sucesso e cache atualizado!');

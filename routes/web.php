@@ -18,10 +18,10 @@ use Illuminate\Http\Request;
         Route::get('/permissions', Wire\SectorPermissionManagement::class)->name('permissions.index')->middleware(M\CheckSectorPermission::class );
         Route::get('/suppliers', Wire\SupplierManagement::class)->name('suppliers.index')->middleware(M\CheckSectorPermission::class );
         Route::get('/nfe_xml_default', Wire\NfeXmlDefault::class)->name('nfe_xml_default.index')->middleware(M\CheckSectorPermission::class );
+        Route::get('/xml_rules', Wire\RulesEditor::class)->name('xml_rules.index')->middleware(M\CheckSectorPermission::class );
     });
 // });
 
-Route::get('/xml_rules', Wire\RulesEditor::class)->name('xml_rules.index');
 
 // Rotas de login e logout
 Route::middleware('guest')->group(function () {

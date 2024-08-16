@@ -8,10 +8,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;   
 use SimpleXMLElement;
 use App\Models as M;
-use Illuminate\Support\Facades\Log;
+use App\Traits\ActionLoggable;
 
 class ProcessNFeXml extends Command
 {
+    use ActionLoggable;
     protected $signature = 'nfe:process';
     protected $description = 'Processa os arquivos XML de Nota Fiscal e os salva no banco de dados';
 
@@ -22,7 +23,7 @@ class ProcessNFeXml extends Command
     private function handleNF($tipoNF)
     {
         // Carregar as regras do arquivo JSON ou cache
-        $rules = Cache::remember('nfe_field_rules', now()->addDay(), function () {
+        $rules = Cache::remember('XmlNfRules', now()->addDay(), function () {
             $rulesPath = storage_path('app/xml/nfs/rules.json');
             if (Storage::exists('xml/nfs/rules.json')) {
                 return json_decode(Storage::get('xml/nfs/rules.json'), true);
@@ -39,8 +40,10 @@ class ProcessNFeXml extends Command
                 $xml = new SimpleXMLElement($xmlContent);
                 // Verificar duplicidade antes de inserir
                 $exists = DB::table('xml_nf_header')->where('idnf', $xml->infNFe->attributes()->Id)->exists();
+                $directoryOut = ($tipoNF=='compra') ? 'xml/nfs/processado/inbound/' : 'xml/nfs/processado/outbound/';
                 if ($exists) {
-                    Log::error("Duplicate entry found for idnf: " . $xml->infNFe->attributes()->Id);
+                    $this->logAction('Duplicate entry found for idnf: ', ['$xml->infNFe' => $xml->infNFe->attributes()->Id], 'error');
+                    Storage::move($file, $directoryOut . basename($file));
                     return false;
                 }
                 $headerValid = $this->validateXml($xml, $rules['header'] ?? []);
@@ -48,7 +51,7 @@ class ProcessNFeXml extends Command
                 $headerData = [
                     'tipoNF' => $tipoNF,
                     'idnf' => (string) $xml->infNFe->attributes()->Id,
-                    'versao' => (string) $xml->attributes()->versao,
+                    'versao' => (string) $xml->infNFe->attributes()->versao,
                     'cUF' => (string) $xml->infNFe->ide->cUF,
                     'cNF' => (string) $xml->infNFe->ide->cNF,
                     'natOp' => (string) $xml->infNFe->ide->natOp,
@@ -118,10 +121,12 @@ class ProcessNFeXml extends Command
                 ];
 
                 // Salvando no banco de dados
+                $header = (object) []; $header->id = null;
                 $header = M\XmlNfHeader::create($headerData);
                 // Preencher a tabela xml_nf_body com informações dos produtos
                 foreach ($xml->infNFe->det as $item) {
-                    $itemValid = !$headerValid ? $headerValid : $this->validateXml($item, $rules['body'] ?? []);
+                    $itemValid = true;
+                    // $itemValid = !$headerValid ? $headerValid : $this->validateXml($item, $rules['body'] ?? []);
                     $bodyData = [
                         'id' => $header->id, // mesmo ID que o cabeçalho
                         'nItem' => (string) $item->attributes()->nItem,
@@ -158,42 +163,70 @@ class ProcessNFeXml extends Command
                     ];
                     M\XmlNfBody::create($bodyData);
                 }
-                $directoryOut = ($tipoNF=='compra') ? 'xml/nfs/processado/inbound/' : 'xml/nfs/processado/outbound/';
                 // Mover o arquivo para outra pasta após o processamento, se necessário
                 Storage::move($file, $directoryOut . basename($file));
-                Log::info("File $file processed successfully.");
+                $this->logAction('File processed successfully. ', ['file' => $file], 'info');
             } catch (\Exception $e) {
-                Log::error("Error processing file $file: " . $e->getMessage());
+                $this->logAction('Error processing file $file: ', ['message' => $e->getMessage()], 'error');
             }
         }
     }
 
     protected function validateXml($xml, $requiredFields)
     {
-        foreach ($requiredFields as $key => $value) {
-            if (is_array($value)) {
-                // Se o valor for um array, significa que é um subgrupo
-                if (!isset($xml->$key) || is_null($xml->$key)) {
-                    Log::error("Sub-group $key is missing in XML");
-                    return false; // O subgrupo está faltando
-                }
-                // Recursivamente valida os campos do subgrupo
-                if (!$this->validateXml($xml->$key, $value)) {
-                    Log::error("Validation failed for sub-group $key");
-                    return false;
-                }
-            } else {
-                // Se o valor não for um array, significa que é um campo
-                if (!isset($xml->$key) || empty((string) $xml->$key)) {
-                    if($value){ //se o parametro estiver como verdadeiro
-                        Log::error("Field $key is missing or empty in XML");
-                        return false; // Campo obrigatório está faltando ou está vazio
+        foreach ($xml->children() as $elementName => $element) {
+            // Verifica se o campo existe nas regras ($requiredFields)
+            if (!isset($requiredFields[$elementName])) {
+                // Ignora se o campo não estiver definido nas regras
+                continue;
+            }
+            // Validação de atributos
+            $attributes = $this->getAttributes($element);
+            if (count($attributes) > 0) {
+                foreach ($requiredFields as $key => $value) {
+                    if (is_array($value) && $value) { // Se o campo é obrigatório
+                        if (isset($attributes[$key])) { // Verifica se o atributo existe
+                            if ((string) $attributes[$key] !== '') {
+                                // Se o atributo estiver preenchido, remove das regras
+                                unset($requiredFields[$key]);
+                                continue;
+                            } else {
+                                // Atributo obrigatório está vazio
+                                $this->logAction('Atributo obrigatório está faltando no XML', ['attribute' => $key], 'error');
+                                return false;
+                            }
+                        }
                     }
                 }
             }
-        }
-        return true; // Todos os campos obrigatórios estão presentes
-    }
     
-
+            // Validação de subgrupos recursivamente
+            if (is_array($requiredFields[$elementName])) {
+                if (!$this->validateXml($element, $requiredFields[$elementName])) {
+                    $this->logAction('Erro ao validar subgrupo', ['key' => $elementName], 'error');
+                    return false;
+                }
+            } else {
+                // Verifica se o valor do campo é obrigatório e está vazio
+                if ($requiredFields[$elementName] && (string) $element === '') {
+                    $this->logAction('Campo obrigatório está faltando no XML', ['field' => $elementName], 'error');
+                    return false;
+                }
+            }
+        }
+    
+        return true;
+    }
+            
+        
+    private function getAttributes(SimpleXMLElement $element)
+    {
+        $attributes = [];
+        if ($element->attributes()) {
+            foreach ($element->attributes() as $name => $value) {
+                $attributes[(string)$name] = (string)$value;
+            }
+        }
+        return $attributes;
+    }        
 }
