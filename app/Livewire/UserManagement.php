@@ -95,7 +95,7 @@ class UserManagement extends Component
         $this->email = $user->email;
         $this->sector_id = $user->sector_id;
         $this->enabled = (bool)$user->enabled; // Garantir que seja um booleano
-        $this->level = $user->level; // Garantir que seja um booleano
+        $this->level = $user->level;
         $this->screenAction = 'edit';
     }
 
@@ -115,6 +115,7 @@ class UserManagement extends Component
         $user->email = $this->email;
         $user->sector_id = $this->sector_id;
         $user->enabled = $this->enabled;
+        $user->level = $this->level;
         if ($this->password) {
             $user->password = Hash::make($this->password);
         }

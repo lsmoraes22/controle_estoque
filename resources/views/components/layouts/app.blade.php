@@ -6,26 +6,36 @@
     <title>Controle de Estoque</title>
     
     @livewireStyles
-    <link href="tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="bootstrap-icons.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link href="{{ asset('tailwind.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('bootstrap-icons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('style.css') }}">
 </head>
-<body>
-<div class="{{config('tailwind.divContainer')}}">
-    @livewire('nav')
-    @if (session()->has('message'))
-        <div class="{{config('tailwind.divMassage')}}">
-            {{ session('message') }}
+<body class="bg-gray-200 font-mono text-black min-h-screen">
+    <div class="flex min-h-screen">
+        @auth
+            <div x-data="{ isOpen: true }" 
+                 :class="isOpen ? 'w-8' : 'w-64'"
+                 class="bg-gray-800 text-white transition-all duration-300">
+                @livewire('nav')
+            </div>
+        @endauth
+
+        <div id="main" class="flex-grow p-8 bg-zinc-300 border border-gray-600 rounded-md shadow-lg transition-all duration-300">
+            @if (session()->has('message'))
+                <div class="{{ config('tailwind.divMessage') }}">
+                    {{ session('message') }}
+                </div>
+            @elseif (session()->has('messageError'))
+                <div class="{{ config('tailwind.divMessageError') }}">
+                    {{ session('messageError') }}
+                </div>
+            @endif
+            <div class="{{ config('tailwind.divFormContainer1') }}" id="userId">
+                {{ $slot }}
+            </div>
         </div>
-    @elseif (session()->has('messageError'))
-        <div class="{{config('tailwind.divmessageError')}}">
-            {{ session('messageError') }}
-        </div>
-    @endif
-    <div class="{{config('tailwind.divFormContainer1')}}" id="userId" >
-        {{$slot}}
     </div>
-</div>
+
     @livewireScripts
 </body>
 </html>
