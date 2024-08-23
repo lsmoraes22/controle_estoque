@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 use SimpleXMLElement;
 use App\Models as M;
 use App\Traits\ActionLoggable;
+use Brick\Math\BigInteger;
 
 class ProcessNFeXml extends Command
 {
@@ -47,6 +48,23 @@ class ProcessNFeXml extends Command
                     return false;
                 }
                 $headerValid = $this->validateXml($xml, $rules['header'] ?? []);
+                $CNPJ = [];
+                $CNPJ[0] = substr($xml->infNFe->emit->CNPJ, 0, 2);
+                $CNPJ[1] = '.';
+                $CNPJ[2] = substr($xml->infNFe->emit->CNPJ, 2, 3);
+                $CNPJ[3] = '.';
+                $CNPJ[4] = substr($xml->infNFe->emit->CNPJ, 5, 3);
+                $CNPJ[5] = '/';
+                $CNPJ[6] = substr($xml->infNFe->emit->CNPJ, 8, 4);
+                $CNPJ[7] = '-';
+                $CNPJ[8] = substr($xml->infNFe->emit->CNPJ, 12, 2);
+                $CNPJ = implode('',$CNPJ);
+                $supplier = M\Supplier::where('cnpj', $CNPJ)->firstOrFail();
+                if(!$supplier){
+                    $this->logAction('Supplier not found! ', [], 'error');
+                    Storage::move($file, $directoryOut . basename($file));
+                    return false;
+                }
                 // Extraindo dados do XML
                 $headerData = [
                     'tipoNF' => $tipoNF,
@@ -119,16 +137,33 @@ class ProcessNFeXml extends Command
                     'destIM' => (string) $xml->infNFe->dest->IM,
                     'valid' => (int) $headerValid,
                 ];
-
                 // Salvando no banco de dados
                 $header = (object) []; $header->id = null;
                 $header = M\XmlNfHeader::create($headerData);
                 // Preencher a tabela xml_nf_body com informações dos produtos
+                $allValid = true;
+                $allitems = [];
                 foreach ($xml->infNFe->det as $item) {
-                    $itemValid = true;
-                    // $itemValid = !$headerValid ? $headerValid : $this->validateXml($item, $rules['body'] ?? []);
+                    // Verificar se as propriedades existem antes de acessá-las
+                    $cProd = isset($item->prod->cProd)  ? (string) $item->prod->cProd : null;
+                    $xProd = isset($item->prod->xProd)  ? (string) $item->prod->xProd : null;
+                    $vProd = isset($item->prod->vProd)  ? (float) $item->prod->vProd : null;
+                    $uCom = isset($item->prod->uCom)    ?   (string) $item->prod->uCom : null;
+
+                    if ($cProd !== null) { // Certifica-se de que o cProd existe
+                        $allitems[$cProd] = [
+                            'id' => $cProd,
+                            'description' => substr($xProd,0,255),
+                            'sale_price' => null,
+                            'purchase_price' => is_numeric($vProd) ? round($vProd,2) : null,
+                            'category_id' => 1,
+                            'unit' => substr($uCom,0,4),
+                            'supplier_default_id' => $supplier->id
+                        ];
+                    }
+                    $itemValid = !$headerValid ? $headerValid : $this->validateXml($item, $rules['body'] ?? []);
                     $bodyData = [
-                        'id' => $header->id, // mesmo ID que o cabeçalho
+                        'header' => $header->id, // mesmo ID que o cabeçalho
                         'nItem' => (string) $item->attributes()->nItem,
                         'cProd' => (string) $item->prod->cProd,
                         'cEAN' => (string) $item->prod->cEAN,
@@ -162,10 +197,39 @@ class ProcessNFeXml extends Command
                         'valid' => (int) $itemValid,
                     ];
                     M\XmlNfBody::create($bodyData);
+                    //verifica se todos são verdadeiros
+                    $allValid = $itemValid && $allValid ? true : false;
                 }
                 // Mover o arquivo para outra pasta após o processamento, se necessário
                 Storage::move($file, $directoryOut . basename($file));
+                //verifica se todos os itens estão cadastrados
+                $idAllitems = array_column($allitems, 'id');
+                $products = M\Product::whereIn('id', $idAllitems)->get();
+                $idReg = [];
+                foreach($products as $pd){ $idReg[] =  $pd->id; } //todos os itens cadastrados
+                foreach ($idAllitems as $c) {
+                    if(!in_array($c , $idReg)){
+                        M\Product::create($allitems[$c]);
+                        $this->logAction('New product registered. ', ['id' => $allitems[$c]['id']], 'info');
+                    }
+                }
                 $this->logAction('File processed successfully. ', ['file' => $file], 'info');
+                if($allValid){
+                    $headerData = [
+                        'supplier_id' => $supplier->id,
+                        'xml_nf_header_id' => $header->id,
+                        'status' => 'to receive'
+                    ];
+                    $header_rec = M\reception_header::create($headerData);
+                    foreach ($xml->infNFe->det as $item) {
+                        $bodyData = [
+                            'header' => $header_rec->id, // mesmo ID que o cabeçalho
+                            'product_id' => (string) $item->prod->cProd,
+                            'theoretical' => (string) $item->prod->qCom
+                        ];
+                        M\reception_body::create($bodyData);
+                    }
+                }
             } catch (\Exception $e) {
                 $this->logAction('Error processing file $file: ', ['message' => $e->getMessage()], 'error');
             }

@@ -1,4 +1,4 @@
-<nav class="bg-zinc-300 border border-gray-600 h-full transition-all duration-300 "
+<nav class="bg-zinc-300 border border-gray-600 rounded-md h-full transition-all duration-300 "
  :class="isOpen ? 'w-8' : 'w-64'" >
     <button @click="isOpen = !isOpen"
         class="bg-blue-500 text-white w-100% px-2 py-1 rounded-md mb-4">

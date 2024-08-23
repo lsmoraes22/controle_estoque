@@ -8,10 +8,12 @@ class reception_header extends Model
 {
     protected $fillable = [
         'supplier_id',
+        'xml_nf_header_id',
+        'status'
     ];
 
-    public function receptions()
+    public function reception_body()
     {
-        return $this->hasMany(Reception::class, 'header');
+        return $this->hasMany(reception_body::class, 'header');
     }
 }

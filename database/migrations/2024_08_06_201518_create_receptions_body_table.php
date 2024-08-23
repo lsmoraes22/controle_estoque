@@ -13,15 +13,16 @@ return new class extends Migration
     {
         Schema::create('reception_body', function (Blueprint $table) {
             $table->id('row');
-            $table->unsignedBigInteger('header');
+            $table->unsignedBigInteger('header')->comment('number nf');
             $table->foreign('header')->references('id')->on('reception_headers')->onDelete('cascade');
             $table->string('product_id');  // Alterado para string
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             $table->date('fabrication')->nullable(true);
             $table->date('validity')->nullable(true);
             $table->string('batch', 30)->nullable(true);
-            $table->integer('quantity');
-            $table->unsignedBigInteger('user_id');
+            $table->integer('quantity')->comment('physical quantity');
+            $table->integer('theoretical')->comment('theoretical quantity')->nullable(true);
+            $table->unsignedBigInteger('user_id')->comment('reception user_id')->nullable(true);
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

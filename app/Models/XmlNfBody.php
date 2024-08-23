@@ -11,7 +11,7 @@ class XmlNfBody extends Model
 
     // Definir os campos que podem ser preenchidos em massa
     protected $fillable = [
-        'nItem', 'cProd', 'cEAN', 'xProd', 'NCM', 'NVE', 'CEST',
+        'header', 'nItem', 'cProd', 'cEAN', 'xProd', 'NCM', 'NVE', 'CEST',
         'indEscala', 'CNPJFab', 'cBenef', 'EXTIPI', 'CFOP', 'uCom',
         'qCom', 'vUnCom', 'vProd', 'cEANTrib', 'uTrib', 'qTrib', 
         'vUnTrib', 'vFrete', 'vSeg', 'vDesc', 'vOutro', 'indTot',
@@ -19,7 +19,7 @@ class XmlNfBody extends Model
     ];
 
     // Relacionamento um-para-um com XmlNfHeader
-    public function header()
+    public function XmlNfHeader()
     {
         return $this->belongsTo(XmlNfHeader::class, 'id');
     }

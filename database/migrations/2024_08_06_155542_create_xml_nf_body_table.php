@@ -12,8 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('xml_nf_body', function (Blueprint $table) {
-            $table->id(); //igual ao id xml_nf_head
+            $table->id(); 
             //dados do produto
+            $table->bigInteger('header')->nullable(false)->comment('numero do cabecalho');
+            $table->foreign('header')->references('id')->on('xml_nf_header')->onDelete('cascade');
             $table->string('nItem', 3)->nullable(true)->comment('Número do item (1-990)');
             $table->string('cProd', 60)->nullable(true)->comment('Código do produto ou serviço');
             $table->string('cEAN', 14)->nullable(true)->comment('GTIN (Global Trade Item Number) do produto, antigo código EAN ou código de barras');

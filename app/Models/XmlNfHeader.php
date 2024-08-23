@@ -22,4 +22,10 @@ class XmlNfHeader extends Model
         'destcMun', 'destxMun', 'destUF', 'destCEP', 'destcPais', 'destxPais', 'destfone', 'indIEDest',
         'destIE', 'destISUF', 'destIM','valid'
     ];
+
+    public function XmlNfBody()
+    {
+        return $this->hasMany(XmlNfBody::class, 'header');
+    }
+
 }
