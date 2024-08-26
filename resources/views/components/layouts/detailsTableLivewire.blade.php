@@ -12,12 +12,16 @@
             <tr class="{{ config('tailwind.trtd') }}">
                 @foreach($fields as $field => $label)
                     <td class="{{ config('tailwind.td') }}">
-                        @if($field === 'enabled')
+                        @if($model->getTypeDataFields($field) === 'boolean')
                             {{ $model->$field ? 'Yes' : 'No' }}
                         @elseif(in_array($field, array_keys($foreignFields)))
                             {{ $model->{$foreignFields[$field]['table']}->{$foreignFields[$field]['field']} }}
                         @else
-                            {{ $model->$field }}
+                            @if($model->getTypeDataFields($field) === 'boolean')
+                                {{ $model->$field ? 'Yes' : 'No' }}
+                            @else
+                                {{ $model->$field }}
+                            @endif
                         @endif
                     </td>
                 @endforeach
@@ -30,10 +34,10 @@
                             // Se o valor for um array, converte para JSON ou implode os valores
                             $d = json_encode($d); // Ou você pode usar implode(', ', $d) se preferir uma string simples
                         }
-                        $textDetails .= "$key => $d | ";
+                        $d = $model->getTypeDataFields($key) === 'boolean' ? ( $d ? 'Yes' : 'No' ) : $d;
+                        $textDetails .= "$key : $d | ";
                     }
                 @endphp
-
                 <button itens:details="{{ $textDetails }}" 
                     onclick="document.getElementById('P_Details_products').innerHTML = this.getAttribute('itens:details').replace(/\|/gi,'<br>').replace(/\_/gi,' ');" class="{{ config('tailwind.button') }}">
                     <i class="bi bi-lamp"></i>

@@ -62,6 +62,19 @@ class warehouse extends Model
         ];
     }
 
+    public function getTypeDataFields($field){
+        $data = [
+            'warehouse' => 'string',
+            'hall' => 'string',
+            'position' => 'string',
+            'level' => 'string',
+            'multiple' => 'boolean',
+            'weight_max_alveolus' => 'integer',
+            'enabled' => 'boolean'
+        ];
+        return $data[$field];
+    }
+
     public function getForeignField(){
         return [];
     }

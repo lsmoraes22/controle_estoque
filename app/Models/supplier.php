@@ -65,6 +65,22 @@ class Supplier extends Model
         ];
     }
 
+    public function getTypeDataFields($field){
+        $data = [
+            'id' => 'integer',
+            'supplier'  => 'string',
+            'address'   => 'string',
+            'phone1'    => 'string',
+            'phone2'    => 'string',
+            'phone3'    => 'string',
+            'email'     => 'string',
+            'cnpj'      => 'string',
+            'ie'        => 'string',
+            'enabled'   => 'boolean',
+        ];
+        return $data[$field];
+    }
+
     public function getForeignField(){
         return [];
     }

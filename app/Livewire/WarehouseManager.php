@@ -19,7 +19,7 @@ class WarehouseManager extends Component
     public $foreignFields = [];
 
     protected $rules = [
-        'warehouse.warehouse' => 'required|max:1',
+        'warehouse.warehouse' => 'required|max:1|unique:warehouses,warehouse',
         'warehouse.description' => 'required|string|max:50',
         'warehouse.multiple' => 'boolean',
         'warehouse.weight_max_alveolus' => 'nullable|integer',
@@ -80,8 +80,8 @@ class WarehouseManager extends Component
             $warehouse = Warehouse::find($id);
             $this->warehouseId = $warehouse->warehouse;
             $this->warehouse = $warehouse->toArray();
-            $this->warehouse['multiple'] = (bool)$warehouse->multiple; // Garante que o valor booleano seja passado corretamente
-            $this->warehouse['enabled'] = (bool)$warehouse->enabled; // Garante que o valor booleano seja passado corretamente
+            $this->warehouse['multiple']    = (bool) $warehouse->multiple; // Garante que o valor booleano seja passado corretamente
+            $this->warehouse['enabled']     = (bool) $warehouse->enabled; // Garante que o valor booleano seja passado corretamente
             $this->screenAction = 'edit';
         }
     }

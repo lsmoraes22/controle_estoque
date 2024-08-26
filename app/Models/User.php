@@ -73,6 +73,18 @@ class User extends Authenticatable
         ];
     }
 
+    public function getTypeDataFields($field){
+        $data = [
+            'name' => 'string',
+            'email' => 'string',
+            'enabled' => 'boolean',
+            'sector_id' => 'integer',
+            'level' => 'integer',
+        ]; 
+        return $data[$field];
+    }
+
+
     public function getForeignField(){
         return [
             'sector_id' => [

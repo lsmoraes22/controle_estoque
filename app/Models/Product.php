@@ -39,6 +39,17 @@ class Product extends Model
         ];
     }
 
+    public function getTypeDataFields($field){
+        $data = [
+            'id'     => 'integer',
+            'category_id' => 'integer',
+            'description'    => 'string',
+            'unit' => 'string',
+            'enabled'   => 'boolean'
+        ];
+        return $data[$field];
+    }
+
     public function getForeignField(){
         return [
             'category_id' => [

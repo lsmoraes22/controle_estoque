@@ -47,6 +47,14 @@ class Sector extends Model
         ];
     }
 
+    public function getTypeDataFields($field){
+        $data = [
+            'sector'     => 'integer',
+            'enabled'   => 'boolean',
+        ];
+        return $data[$field];
+    }
+
     public function getForeignField(){
         return [
             

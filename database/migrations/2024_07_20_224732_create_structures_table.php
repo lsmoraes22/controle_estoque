@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('structures', function (Blueprint $table) {
+            $table->string('id',17)->primary()->comment('id');
             $table->string('warehouse')->comment('Warehouse');
-            $table->foreign('warehouse')->references('warehouse')->on('warehouses');
+            $table->foreign('warehouse')->references('warehouse')->on('warehouses')->onDelete('cascade');
             $table->smallInteger('hall')->comment('hall');
             $table->smallInteger('position')->comment('position');
             $table->tinyInteger('level')->comment('level');

@@ -48,6 +48,16 @@ class SectorPermission extends Model
         ];
     }
 
+    public function getTypeDataFields($field){
+        $data = [
+            'sector_id'     => 'integer',
+            'permission_id' => 'integer',
+            'read_write'    => 'string',
+            'enabled'   => 'boolean',
+        ];
+        return $data[$field];
+    }
+
     public function getForeignField(){
         return [
             'sector_id' => [
