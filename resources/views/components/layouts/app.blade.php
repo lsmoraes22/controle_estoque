@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Estoque</title>
-    
     @livewireStyles
     <link href="{{ asset('tailwind.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('bootstrap-icons.min.css') }}">
@@ -19,7 +18,6 @@
                 @livewire('nav')
             </div>
         @endauth
-
         <div id="main" class="flex-grow p-8 bg-zinc-300 shadow-lg transition-all duration-300">
             @if (session()->has('message'))
                 <div class="{{ config('tailwind.divMessage') }}">
@@ -35,7 +33,7 @@
             </div>
         </div>
     </div>
-
     @livewireScripts
+    <script src="jquery.min.js" ></script>
 </body>
 </html>

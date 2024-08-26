@@ -21,7 +21,7 @@ class ProductManager extends Component
     protected $rules = [
         'product.description' => 'required|string|max:255',
         'product.sale_price' => 'nullable|numeric',
-        'product.purchase_price' => 'required|numeric',
+        'product.purchase_price' => 'nullable|numeric',
         'product.category_id' => 'required|integer',
         'product.unit' => 'required|string|max:10',
         'product.unit_per_box' => 'nullable|integer',

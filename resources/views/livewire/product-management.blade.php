@@ -2,6 +2,11 @@
     @php
         $inputs = [
             [
+                'model' => 'product.id',
+                'type'  => 'text',
+                'label' => 'ID',
+            ],
+            [
                 'model' => 'product.description',
                 'type'  => 'text',
                 'label' => 'Description',
@@ -48,7 +53,7 @@
             ],
             [
                 'model' => 'product.shelflife',
-                'type'  => 'date',
+                'type'  => 'number',
                 'label' => 'Shelf Life',
             ],
             [
@@ -75,7 +80,8 @@
     @endphp
 
     @include('components.layouts.headLivewire', ['headLable' => 'Add Product', 'placeholderSearch' => 'Search by Product Description'])
-    @include('components.layouts.tableLivewire', ['models' => $products])
+    @include('components.layouts.detailstableLivewire', ['models' => $products])
+    @include('components.layouts.detailsLivewire')
 
     @section('messageDeleteConfirmation')
     <p>

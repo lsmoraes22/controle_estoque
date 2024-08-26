@@ -3,8 +3,8 @@
 return [
     'divContainer'      => 'grid grid-cols-[auto_1fr] min-h-screen bg-gray-200 font-mono text-black',
     'navbar'            => 'bg-zinc-300 border border-gray-600 h-full transition-all duration-300', // Largura fixa de 256px
-    'nav-list'          => 'flex flex-col space-y-2 text-black',
-    'nav-item'          => 'bg-gray-200 border border-gray-600 px-2 py-1 rounded',
+    'nav-list'          => 'flex flex-col text-black',
+    'nav-item'          => 'bg-gray-300 border border-gray-400 px-2 py-1 rounded',
     'nav-item-logout'   => 'nav-link text-blue-500',
     
     //'divContainer'      => 'grid-cols-2 min-h-screen bg-gray-200 p-4 font-mono text-black',

@@ -33,7 +33,7 @@ class Product extends Model
         return [
             'id' => 'id',
             'description' => 'description',
-            'category_id' => 'category_id',
+            'category_id' => 'category',
             'unit' => 'unit',
             'enabled' => 'enabled',
         ];

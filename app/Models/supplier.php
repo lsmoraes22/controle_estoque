@@ -54,13 +54,13 @@ class Supplier extends Model
     {
         return [
             'supplier'  => 'Supplier',
-            'address'   => 'Adress',
-            'phone1'    => 'Phone3',
-            'phone2'    => 'Phone3',
-            'phone3'    => 'Phone3',
-            'email'     => 'Email',
+            //'address'   => 'Adress',
+            //'phone1'    => 'Phone1',
+            //'phone2'    => 'Phone2',
+            //'phone3'    => 'Phone3',
+            //'email'     => 'Email',
             'cnpj'      => 'CNPJ',
-            'ie'        => 'IE',
+            //'ie'        => 'IE',
             'enabled'   => 'Enabled',
         ];
     }

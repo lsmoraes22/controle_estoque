@@ -12,6 +12,10 @@ return new class extends Migration
             $table->id();
             $table->string('route', 20);
             $table->string('menu', 20);
+            $table->string('menu_label', 20);
+            $table->string('route_label', 20);
+            $table->string('icon_menu', 50);
+            $table->string('icon_route', 50);
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->timestamp('created_at')->useCurrent();
         });
