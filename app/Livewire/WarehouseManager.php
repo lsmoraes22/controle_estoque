@@ -65,9 +65,7 @@ class WarehouseManager extends Component
     {
         if(!$this->verifyReadOnly()){  
             $this->validate();
-
             Warehouse::create($this->warehouse);
-
             session()->flash('message', 'Warehouse created successfully.');
             $this->resetFields();
             $this->screenAction = 'table';
@@ -86,6 +84,20 @@ class WarehouseManager extends Component
         }
     }
 
+    public function update()
+    {
+        if(!$this->verifyReadOnly()){
+            // Ajuste a regra de validação para o campo 'warehouse.warehouse' para ignorar o ID atual
+            $this->rules['warehouse.warehouse'] = 'required|max:1|unique:warehouses,warehouse,' . $this->warehouseId . ',warehouse';
+            $this->validate();
+            $warehouse = Warehouse::find($this->warehouseId);
+            $warehouse->update($this->warehouse);
+            session()->flash('message', 'Warehouse updated successfully.');
+            $this->resetFields();
+            $this->screenAction = 'table';
+        }
+    }
+
     public function confirmDeletion($id)
     {
         if(!$this->verifyReadOnly()){
@@ -93,21 +105,6 @@ class WarehouseManager extends Component
             $this->confirmingDeletion = true;
         }
     }
-
-    public function update()
-    {
-        if(!$this->verifyReadOnly()){  
-            $this->validate();
-
-            $warehouse = Warehouse::find($this->warehouseId);
-            $warehouse->update($this->warehouse);
-
-            session()->flash('message', 'Warehouse updated successfully.');
-            $this->resetFields();
-            $this->screenAction = 'table';
-        }
-    }
-
     public function delete($id)
     {
         if(!$this->verifyReadOnly()){ 

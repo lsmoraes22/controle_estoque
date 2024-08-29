@@ -73,7 +73,13 @@
         ];
     @endphp
     @include('components.layouts.headLivewire', ['headLable' => 'Add Permission', 'placeholderSearch' => 'Search by Sector or Permission']) 
-    @include('components.layouts.tableLivewire',['models' => $sectorPermissions ])
+    @include('components.layouts.tableLivewire', [
+        'models' => $sectorPermissions, 
+        'buttonList' => true, 
+        'buttonDetails' => false,
+        'buttonEdit' => true,
+        'buttonDelete' => true,
+    ])
     @section('messageDeleteConfirmation') 
     <p>
         Are you sure you want to take this action. <br> 

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class structure extends Model
+class Structure extends Model
 {
     // Definindo a chave primária composta
     protected $primaryKey = 'id';
@@ -37,7 +37,7 @@ class structure extends Model
 
     // Definindo o tipo das chaves primárias compostas como string
     protected $keyType = 'string';
-    protected $cast = [
+    protected $casts = [
         'filled' => 'boolean',
         'immobilized' => 'boolean',
         'enabled' => 'boolean',
@@ -85,5 +85,13 @@ class structure extends Model
 
     public function getForeignField(){
         return [];
+    }
+    public function countPositionStockFilled($warehouse, $hall, $position, $level){
+        return Stock::where([
+            'warehouse' => $warehouse,
+            'hall' => $hall,
+            'position' => $position,
+            'level' => $level
+        ])->count();
     }
 }

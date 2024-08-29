@@ -80,7 +80,13 @@
     @endphp
 
     @include('components.layouts.headLivewire', ['headLable' => 'Add Product', 'placeholderSearch' => 'Search by Product Description'])
-    @include('components.layouts.detailstableLivewire', ['models' => $products])
+    @include('components.layouts.detailstableLivewire', [
+        'models' => $products, 
+        'buttonList' => false, 
+        'buttonDetails' => true,
+        'buttonEdit' => true,
+        'buttonDelete' => false,
+    ])
     @include('components.layouts.detailsLivewire')
 
     @section('messageDeleteConfirmation')

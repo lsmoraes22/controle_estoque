@@ -19,7 +19,14 @@
         ]
     @endphp
     @include('components.layouts.headLivewire', ['headLable' => 'Add Sector', 'placeholderSearch' => 'Search by Sector'])
-    @include('components.layouts.tableLivewire',['models' => $sectors])
+    @include('components.layouts.detailstableLivewire', [
+        'models' => $sectors, 
+        'buttonList' => false, 
+        'buttonDetails' => true,
+        'buttonEdit' => true,
+        'buttonDelete' => false,
+    ])
+    @include('components.layouts.detailsLivewire',['models' => $sectors])
     @section('messageDeleteConfirmation') 
     <p>
         Are you sure you want to take this action. <br> 

@@ -32,6 +32,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'email_verified_at',
         'remember_token',
         'updated_at',
         'created_at'
@@ -75,10 +76,12 @@ class User extends Authenticatable
 
     public function getTypeDataFields($field){
         $data = [
+            'id' => 'integer',
             'name' => 'string',
             'email' => 'string',
             'enabled' => 'boolean',
             'sector_id' => 'integer',
+            'sector' => 'string',
             'level' => 'integer',
         ]; 
         return $data[$field];

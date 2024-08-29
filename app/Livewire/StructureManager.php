@@ -4,14 +4,14 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\{Structure, Warehouse};
+use App\Models as M;
 
 class StructureManager extends Component
 {
     use WithPagination;
 
     public $structure;
-    public $id, $warehouse, $hall, $position, $level, $filled = false, $immobilized = false, $enabled = true;
+    public $structureId, $warehouse, $hall, $position, $level, $filled = false, $immobilized = false, $enabled = true;
     public $search = '';
     public $screenAction = 'table';
     public $confirmingDeletion = false;
@@ -32,18 +32,18 @@ class StructureManager extends Component
 
     public function mount(){
         $this->resetFields();
-        $structure = new Structure();
+        $structure = new M\Structure();
         $this->fields = $structure->getTableFields();
         $this->foreignFields = $structure->getForeignField();
     }
 
     public function render()
     {
-        $structures = Structure::where('id', 'like', '%'.$this->search.'%')
+        $structures = M\Structure::where('id', 'like', '%'.$this->search.'%')
             ->paginate(10);
         // Loop através de cada warehouse e definir o id como warehouse
         
-        $warehouses = Warehouse::all();
+        $warehouses = M\Warehouse::all();
         return view('livewire.structure-manager', [
             'structures' => $structures,
             'warehouses' => $warehouses
@@ -60,7 +60,7 @@ class StructureManager extends Component
     {
         $this->validate();
 
-        Structure::create([
+        M\Structure::create([
             'id' => $this->warehouse . str_pad($this->hall,6,'0',STR_PAD_LEFT) . str_pad($this->position,6,'0',STR_PAD_LEFT) . str_pad($this->level,4,'0',STR_PAD_LEFT),
             'warehouse' => $this->warehouse,
             'hall' => $this->hall,
@@ -78,8 +78,8 @@ class StructureManager extends Component
 
     public function edit($id)
     {
-        $structure = Structure::where('id', $id)->firstOrFail();
-        $this->id = $structure->id;
+        $structure = M\Structure::where('id', $id)->firstOrFail();
+        $this->structureId = $structure->id;
         $this->warehouse = $structure->warehouse;
         $this->hall = $structure->hall;
         $this->position = $structure->position;
@@ -93,7 +93,7 @@ class StructureManager extends Component
     {
         $this->validate();
 
-        $structure = Structure::where('id', $this->id)
+        $structure = M\Structure::where('id', $this->id)
             ->firstOrFail();
 
         $structure->update([
@@ -115,7 +115,7 @@ class StructureManager extends Component
 
     public function delete()
     {
-        $structure = Structure::where('id', $this->structureToDelete)->firstOrFail();
+        $structure = M\Structure::where('id', $this->structureToDelete)->firstOrFail();
         $structure->delete();
 
         session()->flash('message', 'Structure deleted successfully.');
@@ -138,4 +138,5 @@ class StructureManager extends Component
     public function showTable(){
         $this->screenAction = 'table';
     }
+
 }

@@ -34,7 +34,7 @@ class warehouse extends Model
         'created_at'
     ];
 
-    protected $cast = [
+    protected $casts = [
         'enabled' => 'boolean',
         'multiple' => 'boolean',
     ];
@@ -64,13 +64,16 @@ class warehouse extends Model
 
     public function getTypeDataFields($field){
         $data = [
+            'id' => 'string',
             'warehouse' => 'string',
             'hall' => 'string',
             'position' => 'string',
             'level' => 'string',
             'multiple' => 'boolean',
             'weight_max_alveolus' => 'integer',
-            'enabled' => 'boolean'
+            'enabled' => 'boolean',
+            'description' => 'string',
+            'type' => 'string',
         ];
         return $data[$field];
     }

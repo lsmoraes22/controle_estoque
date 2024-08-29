@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreign('supplier_id')->references('id')->on('suppliers')->onDelete('cascade');
             $table->string('xml_nf_header_id',47); // Ligação com a tabela de NFs
             $table->foreign('xml_nf_header_id')->references('id')->on('xml_nf_header')->onDelete('cascade');
+            $table->integer('rows'); // numero de linhas da recepção
             $table->enum('status', ['to receive', 'reception in progress', 'received', 'on hold', 'canceled']);
             $table->boolean('enabled')->default(true);
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

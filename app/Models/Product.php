@@ -24,8 +24,13 @@ class Product extends Model
         'abc_curve',
         'enabled'
     ];
-    protected $cast = [
+    protected $casts = [
         'enabled' => 'boolean',
+    ];
+
+    protected $hidden = [
+        'updated_at',
+        'created_at'
     ];
 
     public function getTableFields()
@@ -45,7 +50,17 @@ class Product extends Model
             'category_id' => 'integer',
             'description'    => 'string',
             'unit' => 'string',
-            'enabled'   => 'boolean'
+            'enabled'   => 'boolean',
+            'sale_price' => 'integer',
+            'purchase_price' => 'string',
+            'category' => 'string',
+            'unit_per_box' => 'string',
+            'box_ballast' => 'string',
+            'ballast_per_layer' => 'string',
+            'box_weight' => 'string',
+            'shelflife' => 'string',
+            'supplier_default_id' => 'string',
+            'abc_curve' => 'string'
         ];
         return $data[$field];
     }

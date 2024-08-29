@@ -22,9 +22,10 @@ use Illuminate\Http\Request;
         Route::get('/products', Wire\ProductManager::class)->name('products.index')->middleware(M\CheckSectorPermission::class );
         Route::get('/warehouses', Wire\WarehouseManager::class)->name('warehouses.index')->middleware(M\CheckSectorPermission::class );
         Route::get('/structures', Wire\StructureManager::class)->name('structures.index')->middleware(M\CheckSectorPermission::class );
+        Route::get('/receptions', Wire\ReceptionHeaderManager::class)->name('receptions.index')->middleware(M\CheckSectorPermission::class );
+        Route::get('/receptions/{header}', Wire\ReceptionBodyManager::class)->name('receptions.update')->middleware(M\CheckSectorPermission::class );
     });
 // });
-
 
 // Rotas de login e logout
 Route::middleware('guest')->group(function () {

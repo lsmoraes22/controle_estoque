@@ -54,7 +54,13 @@
         ];
     @endphp
     @include('components.layouts.headLivewire', ['headLable' => 'Add Supplier', 'placeholderSearch' => "Search by Supplier, name or email "])
-    @include('components.layouts.detailstableLivewire',['models' => $suppliers])
+    @include('components.layouts.detailstableLivewire', [
+        'models' => $suppliers, 
+        'buttonList' => false, 
+        'buttonDetails' => true,
+        'buttonEdit' => true,
+        'buttonDelete' => false,
+    ])
     @include('components.layouts.detailsLivewire',['models' => $suppliers])
     @if ($screenAction == 'create' || $screenAction == 'edit')
         @include('components.layouts.formContainer',['title' => 'Create Supplier'])

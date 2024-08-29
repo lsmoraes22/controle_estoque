@@ -53,7 +53,8 @@ class SectorPermission extends Model
             'sector_id'     => 'integer',
             'permission_id' => 'integer',
             'read_write'    => 'string',
-            'enabled'   => 'boolean',
+            'level'         => 'integer',
+            'enabled'       => 'boolean',
         ];
         return $data[$field];
     }

@@ -35,7 +35,7 @@ class Supplier extends Model
         'created_at'
     ];
 
-    protected $cast = [
+    protected $casts = [
         'enabled' => 'boolean',
     ];
     /**

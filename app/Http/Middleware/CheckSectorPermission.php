@@ -16,7 +16,8 @@ class CheckSectorPermission
 
         // Obtendo o nome da rota ou a URI da rota
         $routeName = $request->route()->getName();
-        $routeUri = $request->route()->uri();
+        $r = explode('/',$request->route()->uri());
+        $routeUri = $r[0]; 
 
         // Buscar as permissões de leitura e escrita 
         $permissions = $user->sector->permissions()
@@ -45,6 +46,10 @@ class CheckSectorPermission
             }
         }
 
+        if($readPermission == null &&  $writePermission == null){
+            session()->flash('messageError', 'Your user does not have access to this location!');
+            return redirect('/home');   
+        }
         // Aplicar a regra de prioridade
         //se a permissao de Leitura for maior do
         //sobrepor a escrita se form maior

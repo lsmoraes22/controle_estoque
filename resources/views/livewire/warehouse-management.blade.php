@@ -49,8 +49,16 @@
         ];
     @endphp 
     @include('components.layouts.headLivewire', ['headLable' => 'Add Warehouse', 'placeholderSearch' => 'Search by description '])
-    @include('components.layouts.tableLivewire', ['models' => $warehouses])
-    
+    @include('components.layouts.detailstableLivewire', [
+        'models' => $warehouses, 
+        'buttonList' => false, 
+        'buttonDetails' => true,
+        'buttonEdit' => true,
+        'buttonDelete' => false,
+    ])
+    @include('components.layouts.detailsLivewire', [
+        'models' => $warehouses
+    ])
     @section('messageDeleteConfirmation')
     <p>
         Are you sure you want to delete this warehouse? <br>
@@ -63,6 +71,7 @@
     @endif
 
     @if ($screenAction == 'create' || $screenAction == 'edit')
+        @unset($inputs[0])
         @include('components.layouts.formContainer', ['title' => 'Warehouse'])
     @endif
 

@@ -218,16 +218,21 @@ class ProcessNFeXml extends Command
                     $headerData = [
                         'supplier_id' => $supplier->id,
                         'xml_nf_header_id' => $header->id,
-                        'status' => 'to receive'
+                        'status' => 'to receive',
+                        'rows' => count($xml->infNFe->det)
                     ];
-                    $header_rec = M\reception_header::create($headerData);
+                    $header_rec = M\ReceptionHeader::create($headerData);
+                    $detCount=0;
                     foreach ($xml->infNFe->det as $item) {
                         $bodyData = [
-                            'header' => $header_rec->id, // mesmo ID que o cabeçalho
-                            'product_id' => (string) $item->prod->cProd,
-                            'theoretical' => (string) $item->prod->qCom
+                            'header'        => $header_rec->id,     // mesmo ID que o cabeçalho
+                            'product_id'    => (string) $item->prod->cProd,
+                            'theoretical'   => (string) $item->prod->qCom,
+                            'fabrication'   => (string) $this->validateDate($item->prod->dFab),
+                            'validity'      => (string) $this->validateDate($item->prod->dVal),
+                            'batch'         => (string) $item->prod->nLote
                         ];
-                        M\reception_body::create($bodyData);
+                        M\ReceptionBody::create($bodyData);
                     }
                 }
             } catch (\Exception $e) {
@@ -236,6 +241,18 @@ class ProcessNFeXml extends Command
         }
     }
 
+    private function validateDate($date)
+    {
+        $d = explode('-', $date);
+        if(checkdate($d[1],$d[2],$d[0])){
+            return $date;
+        }
+        $d = explode('/', $date);
+        if(checkdate($d[1],$d[0],$d[2])){
+            return $date;
+        }
+        return null;
+    }
     protected function validateXml($xml, $requiredFields)
     {
         foreach ($xml->children() as $elementName => $element) {

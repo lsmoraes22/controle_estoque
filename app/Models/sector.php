@@ -19,7 +19,7 @@ class Sector extends Model
         'created_at'
     ];
 
-    protected $cast = [
+    protected $casts = [
         'enabled' => 'boolean',
     ];
     
@@ -49,7 +49,8 @@ class Sector extends Model
 
     public function getTypeDataFields($field){
         $data = [
-            'sector'     => 'integer',
+            'id'        => 'integer',
+            'sector'    => 'integer',
             'enabled'   => 'boolean',
         ];
         return $data[$field];

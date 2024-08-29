@@ -53,7 +53,14 @@
         ];
     @endphp
     @include('components.layouts.headLivewire', ['headLable' => 'Add Structure', 'placeholderSearch' => "Search by ID "])
-    @include('components.layouts.tableLivewire',['models' => $structures])
+    @include('components.layouts.detailstableLivewire', [
+        'models' => $structures, 
+        'buttonList' => true, 
+        'buttonDetails' => false,
+        'buttonEdit' => true,
+        'buttonDelete' => true,
+    ])
+
     @if($screenAction == 'edit') 
         @unset($inputs[0],$inputs[1],$inputs[2],$inputs[3])
         @include('components.layouts.formContainer',['title' => 'Edit Structure']) 

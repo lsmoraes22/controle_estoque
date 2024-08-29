@@ -33,6 +33,7 @@ return [
     'formRadio'         => 'border border-gray-600',
     'formTextArea'      => 'border border-gray-600',
     'button'            => 'bg-gray-300 border border-gray-600 px-2 shadow-inner rounded-md hover:bg-gray-400',
+    'buttonSelected'    => 'bg-gray-400 border border-gray-600 px-2 shadow-inner rounded-md hover:bg-gray-400',
     'saveButton'        => 'bg-green-300 border border-green-600 px-2 shadow-inner rounded-md hover:bg-green-400',
     'buttonAlertDelete' => 'bg-red-500 border border-red-600 rounded-md px-2 py-1 shadow-inner hover:bg-red-600 text-white',
     'buttonAlertCancel' => 'bg-gray-300 border border-gray-600 rounded-md px-2 py-1 shadow-inner hover:bg-gray-400',

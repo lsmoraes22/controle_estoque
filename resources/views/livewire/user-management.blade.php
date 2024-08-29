@@ -58,7 +58,14 @@
         ];
     @endphp
     @include('components.layouts.headLivewire', ['headLable' => 'Add User', 'placeholderSearch' => "Search by sector, name or email "])
-    @include('components.layouts.tableLivewire',['models' => $users])
+    @include('components.layouts.detailstableLivewire', [
+        'models' => $users, 
+        'buttonList' => false, 
+        'buttonDetails' => true,
+        'buttonEdit' => true,
+        'buttonDelete' => false,
+    ])
+    @include('components.layouts.detailsLivewire',['models' => $users])
     @if ($screenAction == 'create' || $screenAction == 'edit')
         @include('components.layouts.formContainer',['title' => 'Create User'])
     @endif
