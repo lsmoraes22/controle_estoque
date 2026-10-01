@@ -5,7 +5,7 @@
     <button class="{{$this->status=='received' ? config('tailwind.buttonSelected') : config('tailwind.button')}} w-52 mb-3"  wire:click="status_filter('received')">received</button>
     <button class="{{$this->status=='on hold' ? config('tailwind.buttonSelected') : config('tailwind.button')}} w-52 mb-3"  wire:click="status_filter('on hold')">on hold</button>
     <button class="{{$this->status=='canceled' ? config('tailwind.buttonSelected') : config('tailwind.button')}} w-52 mb-3"  wire:click="status_filter('canceled')">canceled</button>
-    @include('components.layouts.detailstableLivewire', [
+    @include('components.layouts.detailsTableLivewire', [
         'models' => $receptionHeaders, 
         'buttonList' => true, 
         'buttonDetails' => true,

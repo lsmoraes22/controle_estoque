@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('xml_nf_body', function (Blueprint $table) {
             $table->id(); 
             //dados do produto
-            $table->bigInteger('header')->nullable(false)->comment('numero do cabecalho');
+            $table->unsignedBigInteger('header')->nullable(false)->comment('numero do cabecalho');
             $table->foreign('header')->references('id')->on('xml_nf_header')->onDelete('cascade');
             $table->string('nItem', 3)->nullable(true)->comment('Número do item (1-990)');
             $table->string('cProd', 60)->nullable(true)->comment('Código do produto ou serviço');

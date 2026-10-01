@@ -19,7 +19,7 @@
         ]
     @endphp
     @include('components.layouts.headLivewire', ['headLable' => 'Add Sector', 'placeholderSearch' => 'Search by Sector'])
-    @include('components.layouts.detailstableLivewire', [
+    @include('components.layouts.detailsTableLivewire', [
         'models' => $sectors, 
         'buttonList' => false, 
         'buttonDetails' => true,

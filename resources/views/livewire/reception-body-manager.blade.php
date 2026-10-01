@@ -2,7 +2,7 @@
     @include('components.layouts.headLivewireWithoutAdd', ['headLable' => 'Reception', 'placeholderSearch' => 'Search by Supplier '])
     <button class="{{$this->status=='to receive' ? config('tailwind.buttonSelected') : config('tailwind.button')}} w-52 mb-3"  wire:click="status_filter('0')">to receive</button>
     <button class="{{$this->status=='received' ? config('tailwind.buttonSelected') : config('tailwind.button')}} w-52 mb-3"  wire:click="status_filter('1')">received</button>
-    @include('components.layouts.detailstableLivewire', [
+    @include('components.layouts.detailsTableLivewire', [
         'models' => $receptionBodys, 
         'buttonList' => false, 
         'buttonDetails' => true,

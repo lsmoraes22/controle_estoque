@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Structure extends Model
 {
-    // Definindo a chave primária composta
+    // id é a chave primária textual da model.
+    // warehouse + hall + position + level formam a constraint UNIQUE da localização física.
     protected $primaryKey = 'id';
     
     // Desativando o auto-incremento
@@ -35,7 +36,7 @@ class Structure extends Model
         'created_at'
     ];
 
-    // Definindo o tipo das chaves primárias compostas como string
+    // Definindo o tipo da chave primária id como string
     protected $keyType = 'string';
     protected $casts = [
         'filled' => 'boolean',

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->smallInteger('hall')->comment('hall');
             $table->smallInteger('position')->comment('position');
             $table->tinyInteger('level')->comment('level');
-            $table->primary(['warehouse', 'hall', 'position', 'level']);
+            $table->unique(['warehouse', 'hall', 'position', 'level']);
             $table->boolean('filled')->comment('if alveolus is filled')->default(false);
             $table->boolean('immobilized')->comment('if alveolus is immobilized')->default(false);
             $table->boolean('enabled')->default(true);

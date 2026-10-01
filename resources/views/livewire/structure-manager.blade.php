@@ -53,7 +53,7 @@
         ];
     @endphp
     @include('components.layouts.headLivewire', ['headLable' => 'Add Structure', 'placeholderSearch' => "Search by ID "])
-    @include('components.layouts.detailstableLivewire', [
+    @include('components.layouts.detailsTableLivewire', [
         'models' => $structures, 
         'buttonList' => true, 
         'buttonDetails' => false,

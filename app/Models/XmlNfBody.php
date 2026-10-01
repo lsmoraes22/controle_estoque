@@ -21,6 +21,6 @@ class XmlNfBody extends Model
     // Relacionamento um-para-um com XmlNfHeader
     public function XmlNfHeader()
     {
-        return $this->belongsTo(XmlNfHeader::class, 'id');
+        return $this->belongsTo(XmlNfHeader::class, 'header');
     }
 }

@@ -80,7 +80,7 @@
     @endphp
 
     @include('components.layouts.headLivewire', ['headLable' => 'Add Product', 'placeholderSearch' => 'Search by Product Description'])
-    @include('components.layouts.detailstableLivewire', [
+    @include('components.layouts.detailsTableLivewire', [
         'models' => $products, 
         'buttonList' => false, 
         'buttonDetails' => true,

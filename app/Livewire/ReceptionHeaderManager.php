@@ -162,7 +162,7 @@ class ReceptionHeaderManager extends Component
     {
         $receptionHeader = M\ReceptionHeader::findOrFail($header);
         $receptionHeader->update(['status' => 'to receive', 'enabled' => $this->enabled]);
-        M\receptionBody::where(['header' => $header, 'received' => true])
+        M\ReceptionBody::where(['header' => $header, 'received' => true])
             ->update(['received' => false]);
     }
     private function updateStatusReceptionInProgress($header){
@@ -197,7 +197,7 @@ class ReceptionHeaderManager extends Component
     private function updateStatusReceived($header)
     {
         $receptionHeader = M\ReceptionHeader::findOrFail($header);
-        $rowsBody = M\receptionBody::where(['header' => $header, 'received' => true])->get();
+        $rowsBody = M\ReceptionBody::where(['header' => $header, 'received' => true])->get();
         $contRowsBody = count($rowsBody);
         if($contRowsBody<$receptionHeader->rows) return $this->toConfirmLowerReception($receptionHeader->id) ;
         $receptionHeader->update([ 'status' => 'received' ]);
@@ -219,8 +219,8 @@ class ReceptionHeaderManager extends Component
                 'position'      => substr($row->structure->id, 7, 6),
                 'level'         => substr($row->structure->id, 13, 4)
             ];
-            $stock = M\stock::create($stockAdd);
-            $rowsBodyUd = M\receptionBody::findOrFail($row->row);
+            $stock = M\Stock::create($stockAdd);
+            $rowsBodyUd = M\ReceptionBody::findOrFail($row->row);
             $rowsBodyUd->update(['stock_id' => $stock->id]);
             M\Journal::create([
                 'action'        => 'INS',

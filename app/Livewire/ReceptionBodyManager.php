@@ -141,7 +141,7 @@ class ReceptionBodyManager  extends Component
     {
         $this->validate();
         $receptionHeader = M\ReceptionHeader::findOrFail($this->header);
-        $receptionBody = M\receptionBody::findOrFail($this->id);
+        $receptionBody = M\ReceptionBody::findOrFail($this->id);
         if(!$receptionHeader->enabled){ 
             session()->flash('messageError', 'Editing this record is disabled!');
             return redirect("/receptions/$receptionBody->header"); 

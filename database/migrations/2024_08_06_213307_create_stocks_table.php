@@ -31,12 +31,17 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
 
             // Chaves estrangeiras
-            $table->foreign('reception_id')->references('row')->on('ReceptionBody');
+            $table->foreign('reception_id')->references('row')->on('reception_body');
             $table->foreign('product_id')->references('id')->on('products');
             $table->foreign('supplier_id')->references('id')->on('suppliers');
             $table->foreign('immob_code')->references('immob_code')->on('immobilizations');
-            $table->foreign('warehouse')->references('warehouse')->on('structures');
+            $table->foreign(['warehouse', 'hall', 'position', 'level'])
+                ->references(['warehouse', 'hall', 'position', 'level'])->on('structures');
             
+        });
+
+        Schema::table('reception_body', function (Blueprint $table) {
+            $table->foreign('stock_id')->references('id')->on('stock')->nullOnDelete();
         });
     }
 
@@ -45,6 +50,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('stocks');
+        Schema::table('reception_body', function (Blueprint $table) {
+            $table->dropForeign(['stock_id']);
+        });
+
+        Schema::dropIfExists('stock');
     }
 };

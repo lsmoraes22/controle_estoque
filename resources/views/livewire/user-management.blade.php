@@ -58,7 +58,7 @@
         ];
     @endphp
     @include('components.layouts.headLivewire', ['headLable' => 'Add User', 'placeholderSearch' => "Search by sector, name or email "])
-    @include('components.layouts.detailstableLivewire', [
+    @include('components.layouts.detailsTableLivewire', [
         'models' => $users, 
         'buttonList' => false, 
         'buttonDetails' => true,

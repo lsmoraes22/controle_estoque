@@ -49,7 +49,7 @@
         ];
     @endphp 
     @include('components.layouts.headLivewire', ['headLable' => 'Add Warehouse', 'placeholderSearch' => 'Search by description '])
-    @include('components.layouts.detailstableLivewire', [
+    @include('components.layouts.detailsTableLivewire', [
         'models' => $warehouses, 
         'buttonList' => false, 
         'buttonDetails' => true,

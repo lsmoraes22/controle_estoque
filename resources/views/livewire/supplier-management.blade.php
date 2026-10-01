@@ -54,7 +54,7 @@
         ];
     @endphp
     @include('components.layouts.headLivewire', ['headLable' => 'Add Supplier', 'placeholderSearch' => "Search by Supplier, name or email "])
-    @include('components.layouts.detailstableLivewire', [
+    @include('components.layouts.detailsTableLivewire', [
         'models' => $suppliers, 
         'buttonList' => false, 
         'buttonDetails' => true,

@@ -2,22 +2,40 @@
 
 namespace Database\Seeders;
 
+use App\Models\Permission;
+use App\Models\Sector;
+use App\Models\SectorPermission;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $sector = Sector::firstOrCreate(['sector' => 'Demo'], ['enabled' => true]);
 
-        User::factory()->create([
+        // Synthetic development account; password is the UserFactory default.
+        User::firstOrCreate(['email' => 'test@example.com'], User::factory()->make([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'sector_id' => $sector->id,
+            'enabled' => true,
+            'level' => 2,
+        ])->getAttributes());
+
+        // Only the minimal read-only menu needed to verify navigation.
+        $permission = Permission::firstOrCreate(['route' => 'users'], [
+            'menu' => 'administration',
+            'menu_label' => 'Administration',
+            'route_label' => 'Users',
+            'icon_menu' => 'bi bi-gear',
+            'icon_route' => 'bi bi-person',
         ]);
+
+        SectorPermission::firstOrCreate([
+            'sector_id' => $sector->id,
+            'permission_id' => $permission->id,
+            'read_write' => 'R',
+        ], ['level' => 1, 'enabled' => true]);
     }
 }
