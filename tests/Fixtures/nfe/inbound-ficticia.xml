@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Entirely synthetic application fixture; not a fiscally valid or authorized NF-e. -->
+<NFe xmlns="http://www.portalfiscal.inf.br/nfe">
+    <infNFe Id="NFe00000000000000000000000000000000000000000001" versao="4.00">
+        <ide>
+            <natOp>COMPRA FICTICIA PARA TESTE</natOp>
+            <mod>55</mod>
+            <serie>1</serie>
+            <nNF>1</nNF>
+            <dhEmi>2026-10-01T09:00:00-03:00</dhEmi>
+            <tpNF>1</tpNF>
+            <tpAmb>2</tpAmb>
+        </ide>
+        <emit>
+            <CNPJ>00000000000000</CNPJ>
+            <xNome>FORNECEDOR FICTICIO SEM VALOR FISCAL</xNome>
+            <enderEmit>
+                <xLgr>RUA FICTICIA</xLgr>
+                <nro>0</nro>
+                <xBairro>BAIRRO DE TESTE</xBairro>
+                <xMun>CIDADE FICTICIA</xMun>
+                <UF>SP</UF>
+            </enderEmit>
+        </emit>
+        <dest>
+            <CNPJ>11111111111111</CNPJ>
+            <xNome>DESTINATARIO FICTICIO SEM VALOR FISCAL</xNome>
+            <enderDest>
+                <xLgr>AVENIDA FICTICIA</xLgr>
+                <nro>0</nro>
+                <xBairro>BAIRRO DE TESTE</xBairro>
+                <xMun>CIDADE FICTICIA</xMun>
+                <UF>SP</UF>
+            </enderDest>
+        </dest>
+        <det nItem="1">
+            <prod>
+                <cProd>FORN-001</cProd>
+                <xProd>PRODUTO FICTICIO FRACIONARIO</xProd>
+                <uCom>KG</uCom>
+                <qCom>2.5000</qCom>
+                <vUnCom>10.0000000000</vUnCom>
+                <vProd>25.00</vProd>
+                <nLote>LOTE-FICTICIO-01</nLote>
+                <dFab>2026-09-01</dFab>
+                <dVal>2027-09-01</dVal>
+            </prod>
+        </det>
+        <det nItem="2">
+            <prod>
+                <cProd>FORN-002</cProd>
+                <xProd>PRODUTO FICTICIO SEM LOTE OU DATAS</xProd>
+                <uCom>UN</uCom>
+                <qCom>3.0000</qCom>
+                <vUnCom>4.0000000000</vUnCom>
+                <vProd>12.00</vProd>
+            </prod>
+        </det>
+    </infNFe>
+</NFe>

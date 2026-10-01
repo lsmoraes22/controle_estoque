@@ -11,6 +11,7 @@ class ReceptionBody extends Model
     protected $fillable = [
         'header',
         'product_id',
+        'xml_nf_body_id',
         'fabrication',
         'validity',
         'batch',
@@ -26,6 +27,11 @@ class ReceptionBody extends Model
         'updated_at',
         'created_at'
     ];
+
+    public function xmlNfBody()
+    {
+        return $this->belongsTo(XmlNfBody::class, 'xml_nf_body_id');
+    }
 
     public function ReceptionHeader()
     {
@@ -67,6 +73,7 @@ class ReceptionBody extends Model
             'row' => 'integer',
             'header' => 'string',
             'product_id' => 'integer',
+            'xml_nf_body_id' => 'integer',
             'product_description' => 'string',
             'product_unit' => 'string',
             'product' => 'string',

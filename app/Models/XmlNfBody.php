@@ -23,4 +23,9 @@ class XmlNfBody extends Model
     {
         return $this->belongsTo(XmlNfHeader::class, 'header');
     }
+    public function receptionBodies()
+    {
+        return $this->hasMany(ReceptionBody::class, 'xml_nf_body_id');
+    }
+
 }

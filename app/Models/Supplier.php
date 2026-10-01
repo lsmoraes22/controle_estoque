@@ -84,4 +84,9 @@ class Supplier extends Model
     public function getForeignField(){
         return [];
     }
+    public function supplierProducts()
+    {
+        return $this->hasMany(SupplierProduct::class);
+    }
+
 }
