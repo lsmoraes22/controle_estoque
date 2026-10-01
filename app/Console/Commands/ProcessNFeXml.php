@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;   
 use SimpleXMLElement;
 use App\Models as M;
+use App\Services\Nfe\NfeInboundImporter;
+use App\Services\Nfe\NfeInboundParser;
 use App\Traits\ActionLoggable;
 use Brick\Math\BigInteger;
 
@@ -23,6 +25,12 @@ class ProcessNFeXml extends Command
     }
     private function handleNF($tipoNF)
     {
+        if ($tipoNF === 'compra') {
+            $this->handleInbound();
+
+            return;
+        }
+
         // Carregar as regras do arquivo JSON ou cache
         $rules = Cache::remember('XmlNfRules', now()->addDay(), function () {
             $rulesPath = storage_path('app/xml/nfs/rules.json');
@@ -237,6 +245,23 @@ class ProcessNFeXml extends Command
                 }
             } catch (\Exception $e) {
                 $this->logAction('Error processing file $file: ', ['message' => $e->getMessage()], 'error');
+            }
+        }
+    }
+
+    private function handleInbound(): void
+    {
+        foreach (Storage::files('xml/nfs/inbound') as $file) {
+            try {
+                $content = Storage::get($file);
+                $document = app(NfeInboundParser::class)->parse($content);
+                app(NfeInboundImporter::class)->import($document);
+                $this->logAction('Inbound NF-e imported successfully.', ['file' => $file], 'info');
+            } catch (\Throwable $exception) {
+                $this->logAction('Error processing inbound NF-e.', [
+                    'file' => $file,
+                    'message' => $exception->getMessage(),
+                ], 'error');
             }
         }
     }

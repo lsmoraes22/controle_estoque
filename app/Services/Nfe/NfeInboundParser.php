@@ -106,7 +106,7 @@ final class NfeInboundParser
                     $this->requiredText($product, 'qCom'), 'qCom', null, true, 4, 16
                 ),
                 unitPrice: $this->decimal(
-                    $this->requiredText($product, 'vUnCom'), 'vUnCom', 22, false
+                    $this->requiredText($product, 'vUnCom'), 'vUnCom', 23, false, 10, 12
                 ),
                 totalPrice: $this->decimal(
                     $this->requiredText($product, 'vProd'), 'vProd', 16, false

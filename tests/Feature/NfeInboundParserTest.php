@@ -193,6 +193,14 @@ class NfeInboundParserTest extends TestCase
     {
         $document = $this->parse($this->fixture());
         $this->assertSame('10.0000000000', $document->items[0]->unitPrice);
+        $boundary = $this->parse($this->editXml(fn (DOMDocument $doc, DOMXPath $xpath) =>
+            $this->text($xpath, '/n:NFe/n:infNFe/n:det[1]/n:prod/n:vUnCom', '123456789012.1234567890')));
+        $this->assertSame('123456789012.1234567890', $boundary->items[0]->unitPrice);
+
+        foreach (['1234567890123.00', '1.12345678901'] as $invalid) {
+            $this->assertRejected($this->editXml(fn (DOMDocument $doc, DOMXPath $xpath) =>
+                $this->text($xpath, '/n:NFe/n:infNFe/n:det[1]/n:prod/n:vUnCom', $invalid)));
+        }
         $this->assertRejected($this->editXml(fn (DOMDocument $doc, DOMXPath $xpath) =>
             $this->text($xpath, '/n:NFe/n:infNFe/n:det[1]/n:prod/n:vUnCom', '-0.01')));
         $this->assertRejected($this->editXml(fn (DOMDocument $doc, DOMXPath $xpath) =>
