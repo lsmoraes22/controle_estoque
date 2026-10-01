@@ -6,12 +6,16 @@ use App\Models\Category;
 use App\Models\ReceptionBody;
 use App\Models\ReceptionHeader;
 use App\Models\Supplier;
+use App\Models\SupplierProduct;
+use App\Models\Product;
+use App\Models\User;
 use App\Models\XmlNfBody;
 use App\Models\XmlNfHeader;
 use App\Services\Nfe\NfeInboundImportCompleteness;
 use App\Services\Nfe\NfeInboundImporter;
 use App\Services\Nfe\NfeInboundParser;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Tests\DatabaseTestCase;
@@ -34,6 +38,70 @@ class NfeInboundLifecycleTest extends DatabaseTestCase
         $this->assertDatabaseCount('reception_body', 2);
     }
 
+    public function test_http_upload_to_archive_happy_path_persists_the_complete_domain_graph(): void
+    {
+        $supplier = $this->supplier();
+        config(['nfe.max_xml_bytes' => strlen($this->fixture())]);
+        Storage::fake('local');
+        $this->actingAs(User::factory()->create(), 'sanctum');
+
+        $response = $this->postJson('/api/upload/nf/inbound', [
+            'file' => UploadedFile::fake()->createWithContent('fixture.xml', $this->fixture()),
+        ])->assertCreated()->assertJsonPath('status', 'stored');
+        $filename = $response->json('file');
+        $source = 'xml/nfs/inbound/'.$filename;
+        $destination = 'xml/nfs/processado/inbound/'.$filename;
+
+        Storage::disk('local')->assertExists($source);
+        $this->artisan('nfe:process')->assertExitCode(0);
+
+        Storage::disk('local')->assertMissing($source);
+        Storage::disk('local')->assertExists($destination);
+        $xmlHeader = XmlNfHeader::query()->sole();
+        $receptionHeader = ReceptionHeader::query()->sole();
+        $this->assertSame('NFe'.str_repeat('0', 43).'1', $xmlHeader->idnf);
+        $this->assertSame($supplier->id, $receptionHeader->supplier_id);
+        $this->assertSame($xmlHeader->id, $receptionHeader->xml_nf_header_id);
+        $this->assertDatabaseCount('xml_nf_body', 2);
+        $this->assertDatabaseCount('products', 2);
+        $this->assertDatabaseCount('supplier_products', 2);
+        $this->assertDatabaseCount('reception_body', 2);
+
+        foreach (XmlNfBody::query()->orderBy('nItem')->get() as $xmlItem) {
+            $reception = ReceptionBody::query()->where('xml_nf_body_id', $xmlItem->id)->sole();
+            $mapping = SupplierProduct::query()
+                ->where('supplier_id', $supplier->id)
+                ->where('supplier_product_code', $xmlItem->cProd)
+                ->sole();
+            $product = Product::query()->findOrFail($mapping->product_id);
+
+            $this->assertSame($receptionHeader->id, $reception->header);
+            $this->assertSame($xmlItem->id, $reception->xml_nf_body_id);
+            $this->assertSame($product->id, $reception->product_id);
+            $this->assertSame($xmlItem->qCom, $reception->theoretical);
+            $this->assertSame($xmlItem->vUnCom, $product->purchase_price);
+            $this->assertNotSame($xmlItem->vProd, $product->purchase_price);
+        }
+
+        $batchedXmlItem = XmlNfBody::query()->where('nItem', '1')->sole();
+        $batchedReception = ReceptionBody::query()->where('xml_nf_body_id', $batchedXmlItem->id)->sole();
+        $this->assertSame('LOTE-FICTICIO-01', $batchedXmlItem->nLote);
+        $this->assertSame('2026-09-01', $batchedXmlItem->dFab);
+        $this->assertSame('2027-09-01', $batchedXmlItem->dVal);
+        $this->assertSame('LOTE-FICTICIO-01', $batchedReception->batch);
+        $this->assertSame('2026-09-01', $batchedReception->fabrication);
+        $this->assertSame('2027-09-01', $batchedReception->validity);
+
+        $unbatchedXmlItem = XmlNfBody::query()->where('nItem', '2')->sole();
+        $unbatchedReception = ReceptionBody::query()->where('xml_nf_body_id', $unbatchedXmlItem->id)->sole();
+        $this->assertNull($unbatchedXmlItem->nLote);
+        $this->assertNull($unbatchedXmlItem->dFab);
+        $this->assertNull($unbatchedXmlItem->dVal);
+        $this->assertNull($unbatchedReception->batch);
+        $this->assertNull($unbatchedReception->fabrication);
+        $this->assertNull($unbatchedReception->validity);
+    }
+
     public function test_supplier_failure_keeps_source_inbound_without_partial_database_rows(): void
     {
         Storage::fake('local');
@@ -44,6 +112,29 @@ class NfeInboundLifecycleTest extends DatabaseTestCase
         Storage::disk('local')->assertExists($source);
         Storage::disk('local')->assertMissing('xml/nfs/processado/inbound/supplier-missing.xml');
         $this->assertNoImportRecords();
+    }
+
+    public function test_pending_supplier_file_imports_and_archives_after_supplier_is_added(): void
+    {
+        Storage::fake('local');
+        $source = $this->inbound('pending-supplier.xml');
+
+        $this->artisan('nfe:process')->assertExitCode(0);
+        Storage::disk('local')->assertExists($source);
+        Storage::disk('local')->assertMissing('xml/nfs/processado/inbound/pending-supplier.xml');
+        $this->assertNoImportRecords();
+
+        $this->supplier();
+        $this->artisan('nfe:process')->assertExitCode(0);
+
+        Storage::disk('local')->assertMissing($source);
+        Storage::disk('local')->assertExists('xml/nfs/processado/inbound/pending-supplier.xml');
+        $this->assertDatabaseCount('xml_nf_header', 1);
+        $this->assertDatabaseCount('xml_nf_body', 2);
+        $this->assertDatabaseCount('products', 2);
+        $this->assertDatabaseCount('supplier_products', 2);
+        $this->assertDatabaseCount('reception_headers', 1);
+        $this->assertDatabaseCount('reception_body', 2);
     }
 
     public function test_invalid_default_category_keeps_source_and_rolls_back(): void

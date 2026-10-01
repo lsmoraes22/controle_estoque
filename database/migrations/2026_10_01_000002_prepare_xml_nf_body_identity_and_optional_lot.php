@@ -21,6 +21,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('xml_nf_body', function (Blueprint $table) {
+            // Preserve the index needed by xml_nf_body.header's foreign key when the composite key is removed.
+            $table->index('header');
             $table->dropUnique(['header', 'nItem']);
             $table->string('nLote', 20)->nullable(false)->comment('Número do Lote do produto')->change();
             $table->string('qLote', 12)->nullable(false)->comment('Quantidade de produto no Lote')->change();
