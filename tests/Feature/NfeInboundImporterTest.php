@@ -265,7 +265,7 @@ class NfeInboundImporterTest extends DatabaseTestCase
         $this->assertNoImportRecords();
     }
 
-    public function test_successful_command_import_keeps_file_in_inbound_for_round_2b_4(): void
+    public function test_successful_command_import_archives_file_after_commit(): void
     {
         $this->supplier('00000000000000');
         $path = 'xml/nfs/inbound/ficticia.xml';
@@ -274,8 +274,9 @@ class NfeInboundImporterTest extends DatabaseTestCase
 
         $this->artisan('nfe:process')->assertExitCode(0);
 
-        Storage::assertExists($path);
-        Storage::assertMissing('xml/nfs/processado/inbound/ficticia.xml');
+        Storage::assertMissing($path);
+        Storage::assertExists('xml/nfs/processado/inbound/ficticia.xml');
+        Storage::assertMissing('xml/nfs/rules.json');
         $this->assertDatabaseCount('xml_nf_header', 1);
     }
 

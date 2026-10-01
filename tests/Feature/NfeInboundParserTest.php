@@ -85,7 +85,7 @@ class NfeInboundParserTest extends TestCase
 
     public function test_configured_xml_size_limit_is_enforced(): void
     {
-        config(['nfe.inbound.max_xml_bytes' => strlen($this->fixture()) - 1]);
+        config(['nfe.max_xml_bytes' => strlen($this->fixture()) - 1]);
 
         $this->assertRejected($this->fixture());
     }

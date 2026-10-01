@@ -10,7 +10,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::patch('/user/{id}/enable', [Api\User::class, 'enable']);
     Route::patch('/user/{id}/disable', [Api\User::class, 'disable']);
     Route::post('/upload/nf/inbound', function (Request $request){
-        Api\XmlUpload::uploadInbound($request);
+        return Api\XmlUpload::uploadInbound($request);
     });
 });
 

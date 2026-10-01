@@ -8,8 +8,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;   
 use SimpleXMLElement;
 use App\Models as M;
+use App\Services\Nfe\NfeInboundArchiveException;
+use App\Services\Nfe\NfeInboundDuplicateException;
+use App\Services\Nfe\NfeInboundImportCompleteness;
 use App\Services\Nfe\NfeInboundImporter;
 use App\Services\Nfe\NfeInboundParser;
+use App\Services\Nfe\NfeInboundFileArchiver;
 use App\Traits\ActionLoggable;
 use Brick\Math\BigInteger;
 
@@ -251,19 +255,129 @@ class ProcessNFeXml extends Command
 
     private function handleInbound(): void
     {
-        foreach (Storage::files('xml/nfs/inbound') as $file) {
+        $disk = Storage::disk('local');
+        foreach ($disk->files('xml/nfs/inbound') as $file) {
             try {
-                $content = Storage::get($file);
-                $document = app(NfeInboundParser::class)->parse($content);
-                app(NfeInboundImporter::class)->import($document);
-                $this->logAction('Inbound NF-e imported successfully.', ['file' => $file], 'info');
+                $lock = $this->acquireInboundFileLock($disk, $file);
             } catch (\Throwable $exception) {
-                $this->logAction('Error processing inbound NF-e.', [
+                $this->logAction('Inbound NF-e file lock failed.', [
                     'file' => $file,
                     'message' => $exception->getMessage(),
                 ], 'error');
+                continue;
+            }
+
+            if ($lock === null) {
+                $this->logAction('Inbound NF-e file is already being processed.', ['file' => $file], 'warning');
+                continue;
+            }
+
+            try {
+                if (!$disk->exists($file)) {
+                    $this->logAction('Inbound NF-e source disappeared before processing.', ['file' => $file], 'error');
+                    continue;
+                }
+
+                try {
+                    $document = app(NfeInboundParser::class)->parse($disk->get($file));
+                } catch (\Throwable $exception) {
+                    $this->logAction('Inbound NF-e parsing/import failed.', [
+                        'file' => $file,
+                        'message' => $exception->getMessage(),
+                    ], 'error');
+                    continue;
+                }
+
+                $alreadyComplete = false;
+                try {
+                    app(NfeInboundImporter::class)->import($document);
+                    $this->logAction('Inbound NF-e import committed.', ['file' => $file, 'idnf' => $document->id], 'info');
+                } catch (NfeInboundDuplicateException $exception) {
+                    try {
+                        $alreadyComplete = app(NfeInboundImportCompleteness::class)->isComplete($document);
+                    } catch (\Throwable $checkException) {
+                        $this->logAction('Existing inbound NF-e is inconsistent.', [
+                            'file' => $file,
+                            'idnf' => $document->id,
+                            'message' => $checkException->getMessage(),
+                        ], 'error');
+                        continue;
+                    }
+
+                    if (!$alreadyComplete) {
+                        $this->logAction('Existing inbound NF-e is inconsistent.', [
+                            'file' => $file,
+                            'idnf' => $document->id,
+                            'message' => $exception->getMessage(),
+                        ], 'error');
+                        continue;
+                    }
+
+                    $this->logAction('Inbound NF-e already complete; reconciling archive.', [
+                        'file' => $file,
+                        'idnf' => $document->id,
+                    ], 'warning');
+                } catch (\Throwable $exception) {
+                    $this->logAction('Inbound NF-e parsing/import failed.', [
+                        'file' => $file,
+                        'message' => $exception->getMessage(),
+                    ], 'error');
+                    continue;
+                }
+
+                try {
+                    $destination = app(NfeInboundFileArchiver::class)->archive($file);
+                    $this->logAction('Inbound NF-e archive completed.', [
+                        'file' => $file,
+                        'destination' => $destination,
+                        'reconciled' => $alreadyComplete,
+                    ], 'info');
+                } catch (NfeInboundArchiveException $exception) {
+                    $this->logAction('Inbound NF-e archive failed.', [
+                        'file' => $file,
+                        'idnf' => $document->id,
+                        'message' => $exception->getMessage(),
+                    ], 'error');
+                } catch (\Throwable $exception) {
+                    $this->logAction('Inbound NF-e archive failed.', [
+                        'file' => $file,
+                        'idnf' => $document->id,
+                        'message' => $exception->getMessage(),
+                    ], 'error');
+                }
+            } finally {
+                $this->releaseInboundFileLock($lock);
             }
         }
+    }
+
+    /** @return resource|null */
+    private function acquireInboundFileLock($disk, string $file)
+    {
+        $lockPath = $disk->path('xml/nfs/inbound/.locks/'.hash('sha256', $file).'.lock');
+        $lockDirectory = dirname($lockPath);
+        if (!is_dir($lockDirectory) && !@mkdir($lockDirectory, 0775, true) && !is_dir($lockDirectory)) {
+            throw new \RuntimeException('Unable to create inbound lock directory.');
+        }
+
+        $handle = @fopen($lockPath, 'c');
+        if ($handle === false) {
+            throw new \RuntimeException('Unable to open inbound lock file.');
+        }
+        if (!flock($handle, LOCK_EX | LOCK_NB)) {
+            fclose($handle);
+
+            return null;
+        }
+
+        return $handle;
+    }
+
+    /** @param resource $lock */
+    private function releaseInboundFileLock($lock): void
+    {
+        flock($lock, LOCK_UN);
+        fclose($lock);
     }
 
     private function validateDate($date)

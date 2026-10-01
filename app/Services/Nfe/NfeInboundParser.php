@@ -14,7 +14,7 @@ final class NfeInboundParser
 
     public function parse(string $xmlContent): NfeInboundDocument
     {
-        $maxBytes = (int) config('nfe.inbound.max_xml_bytes', 2 * 1024 * 1024);
+        $maxBytes = (int) config('nfe.max_xml_bytes', 2 * 1024 * 1024);
         if ($maxBytes < 1 || strlen($xmlContent) > $maxBytes) {
             throw new NfeInboundValidationException('XML excede o tamanho máximo permitido.');
         }
