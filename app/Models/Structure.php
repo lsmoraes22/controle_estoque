@@ -95,4 +95,9 @@ class Structure extends Model
             'level' => $level
         ])->count();
     }
+
+    public function warehouseModel()
+    {
+        return $this->belongsTo(Warehouse::class, 'warehouse', 'warehouse');
+    }
 }

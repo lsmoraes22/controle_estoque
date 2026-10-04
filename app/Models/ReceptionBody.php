@@ -23,6 +23,12 @@ class ReceptionBody extends Model
         'received'
     ];
 
+    protected $casts = [
+        'quantity' => 'decimal:4',
+        'theoretical' => 'decimal:4',
+        'received' => 'boolean',
+    ];
+
     protected $hidden = [
         'updated_at',
         'created_at'

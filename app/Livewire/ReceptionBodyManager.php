@@ -5,6 +5,8 @@ namespace App\Livewire;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models as M;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 //{Journal, ReceptionHeader, ReceptionBody, stock, XmlNfHeader, Structure};
 class ReceptionBodyManager  extends Component
 {
@@ -17,10 +19,12 @@ class ReceptionBodyManager  extends Component
     public $confirmingDeletion = false;
     public $receptionBodyToDelete;
     public $inputs; 
-    protected $rules = [ 
-        'batch' => 'required|string|max:30',
-        'quantity' => 'required|numeric', 
-        'structure_id' => 'required|integer'
+    protected $rules = [
+        'batch' => 'nullable|string|max:30',
+        'quantity' => ['required', 'numeric', 'min:0', 'regex:/^\\d{1,16}(?:\\.\\d{1,4})?$/'],
+        'structure_id' => 'required|string|exists:structures,id',
+        'fabrication' => 'nullable|date_format:Y-m-d',
+        'validity' => 'nullable|date_format:Y-m-d',
     ];
 
     public $fields = [];
@@ -57,18 +61,32 @@ class ReceptionBodyManager  extends Component
             ],
             'fabrication' => [
                 'model' => 'fabrication',
-                'type'  => 'text',
+                'type'  => 'date',
                 'label' => 'Fabrication',
             ],
             'validity' => [
                 'model' => 'validity',
-                'type'  => 'text',
+                'type'  => 'date',
                 'label' => 'Validity',
             ],
             'structure_id' => [
                 'model' => 'structure_id',
-                'type'  => 'text',
+                'type'  => 'select',
                 'label' => 'Structure',
+                'options' => array_merge([
+                    ['value' => '', 'caption' => 'Select structure...'],
+                ], M\Structure::query()
+                    ->where('enabled', true)
+                    ->whereHas('warehouseModel', fn ($query) => $query->where('enabled', true))
+                    ->orderBy('warehouse')
+                    ->orderBy('hall')
+                    ->orderBy('position')
+                    ->orderBy('level')
+                    ->get()
+                    ->map(fn (M\Structure $structure) => [
+                        'value' => $structure->id,
+                        'caption' => "{$structure->warehouse} / {$structure->hall} / {$structure->position} / {$structure->level}",
+                    ])->all()),
             ],
             'received' => [
                 'model' => 'received',
@@ -127,6 +145,7 @@ class ReceptionBodyManager  extends Component
     public function edit($row)
     {   
         $receptionBody = M\ReceptionBody::findOrFail($row);
+        $this->assertHeaderEditable($receptionBody->ReceptionHeader);
         $this->id = $receptionBody->row;
         $this->header = $receptionBody->header; 
         $this->batch = $receptionBody->batch;
@@ -134,50 +153,102 @@ class ReceptionBodyManager  extends Component
         $this->fabrication = $receptionBody->fabrication;
         $this->validity = $receptionBody->validity;
         $this->structure_id = $receptionBody->structure_id;
+        $this->received = (bool) $receptionBody->received;
+        $this->status = $receptionBody->received ? 'received' : 'to receive';
         $this->screenAction = 'edit';
     }
 
     public function update()
     {
-        $this->validate();
-        $receptionHeader = M\ReceptionHeader::findOrFail($this->header);
-        $receptionBody = M\ReceptionBody::findOrFail($this->id);
-        if(!$receptionHeader->enabled){ 
-            session()->flash('messageError', 'Editing this record is disabled!');
-            return redirect("/receptions/$receptionBody->header"); 
+        $receptionBody = M\ReceptionBody::query()
+            ->where('row', $this->id)
+            ->where('header', $this->header)
+            ->firstOrFail();
+        $receptionHeader = $receptionBody->ReceptionHeader;
+        $this->assertHeaderEditable($receptionHeader);
+
+        if (!auth()->check()) {
+            throw ValidationException::withMessages(['user_id' => 'An authenticated user is required.']);
         }
-        $filled = false;
-        $structure = M\Structure::findOrFail($receptionBody->structure_id);
-        $warehouse = M\Warehouse::findOrFail($structure->warehouse);
-        if($this->status == 'to receive'){
-            if($structure->filled && !$warehouse->multiple){
-                session()->flash('messageError', 'This position is already filled!');
-                return redirect("/receptions/$receptionBody->header");
+
+        if (!$receptionBody->received) {
+            $validated = $this->validate();
+            $structure = M\Structure::query()->findOrFail($validated['structure_id']);
+            if (!$structure->enabled) {
+                throw ValidationException::withMessages(['structure_id' => 'Selected structure is disabled.']);
             }
-            $arrReceptionBody = [
-                'batch' => $this->batch, 
-                'structure_id' => $this->structure_id,
-                'quantity' => $this->quantity,
-                'user_id' => auth()->id(),
-                'received' => true
-            ];
-            $this->status = 'received';
-            $filled = true;
+            $warehouse = M\Warehouse::query()->findOrFail($structure->warehouse);
+            if (!$warehouse->enabled) {
+                throw ValidationException::withMessages(['structure_id' => 'Selected warehouse is disabled.']);
+            }
+
+            DB::transaction(function () use ($receptionBody, $receptionHeader, $structure, $warehouse, $validated): void {
+                $structure = M\Structure::query()->whereKey($structure->id)->lockForUpdate()->firstOrFail();
+                if (!$warehouse->multiple && ($structure->filled || $this->hasOtherOccupancy($structure, $receptionBody->row))) {
+                    throw ValidationException::withMessages(['structure_id' => 'This position is already occupied.']);
+                }
+
+                $oldStructure = $receptionBody->structure_id
+                    ? M\Structure::query()->whereKey($receptionBody->structure_id)->lockForUpdate()->first()
+                    : null;
+                $receptionBody->update([
+                    'batch' => $validated['batch'] ?? null,
+                    'quantity' => $validated['quantity'],
+                    'fabrication' => $validated['fabrication'] ?? null,
+                    'validity' => $validated['validity'] ?? null,
+                    'structure_id' => $structure->id,
+                    'user_id' => auth()->id(),
+                    'received' => true,
+                ]);
+                $structure->update(['filled' => true]);
+                if ($oldStructure && $oldStructure->isNot($structure)) {
+                    $oldStructure->update(['filled' => $this->hasOtherOccupancy($oldStructure, $receptionBody->row)]);
+                }
+                $receptionHeader->update(['status' => 'reception in progress']);
+            });
         } else {
-            $arrReceptionBody = [
-                'received' => $this->received
-            ];
-            $this->status = 'to receive';
-            $w = abs(substr($this->structure_id,0,1));
-            $h = abs(substr($this->structure_id,1,6)); 
-            $p = abs(substr($this->structure_id,7,6)); 
-            $l = abs(substr($this->structure_id,13,4));
-            $filled = $structure->countPositionStockFilled($w, $h, $p, $l) > 0 ? true : false;
+            if ($this->received) {
+                return;
+            }
+
+            DB::transaction(function () use ($receptionBody): void {
+                $receptionBody = M\ReceptionBody::query()->whereKey($receptionBody->row)->lockForUpdate()->firstOrFail();
+                $oldStructure = $receptionBody->structure_id
+                    ? M\Structure::query()->whereKey($receptionBody->structure_id)->lockForUpdate()->first()
+                    : null;
+                $receptionBody->update(['received' => false]);
+                if ($oldStructure) {
+                    $oldStructure->update(['filled' => $this->hasOtherOccupancy($oldStructure, $receptionBody->row)]);
+                }
+            });
         }
-        $structure->update([ 'filled' => $filled ]);
-        $receptionBody->update($arrReceptionBody);
-        $receptionHeader->update([ 'status' => 'reception in progress' ]);
+
         $this->screenAction = 'table';
+        $this->received = (bool) $receptionBody->fresh()->received;
+        $this->status = $this->received ? 'received' : 'to receive';
+    }
+
+    private function assertHeaderEditable(?M\ReceptionHeader $header): void
+    {
+        if (!$header || !$header->enabled || in_array($header->status, ['received', 'canceled', 'on hold'], true)) {
+            throw ValidationException::withMessages(['header' => 'This reception cannot be edited in its current state.']);
+        }
+    }
+
+    private function hasOtherOccupancy(M\Structure $structure, int $exceptReceptionRow): bool
+    {
+        $pendingReceptionOccupancy = M\ReceptionBody::query()
+            ->where('structure_id', $structure->id)
+            ->where('received', true)
+            ->where('row', '!=', $exceptReceptionRow)
+            ->exists();
+
+        return $pendingReceptionOccupancy || M\Stock::query()
+            ->where('warehouse', $structure->warehouse)
+            ->where('hall', $structure->hall)
+            ->where('position', $structure->position)
+            ->where('level', $structure->level)
+            ->exists();
     }
 
     /**
