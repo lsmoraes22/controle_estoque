@@ -56,6 +56,7 @@ class ReceptionFinalizationTest extends DatabaseTestCase
         $this->assertNotSame($this->bodies[1]->theoretical, $this->bodies[1]->quantity);
         $this->finalize();
         $this->assertSame('received', $this->header->fresh()->status);
+        $this->assertTrue($this->structure->fresh()->filled);
         $this->assertDatabaseCount('stock', 2);
         $this->assertDatabaseCount('journals', 2);
         foreach ($this->bodies as $body) {
@@ -122,6 +123,106 @@ class ReceptionFinalizationTest extends DatabaseTestCase
         $this->bodies[1]->update(['structure_id' => $structure->id]);
 
         return $structure;
+    }
+
+    public function test_all_zero_finalization_recalculates_stale_filled_to_false(): void
+    {
+        foreach ($this->bodies as $body) {
+            $body->update(['quantity' => '0.0000']);
+        }
+        $this->structure->update(['filled' => true]);
+        $this->finalize();
+        $this->assertFalse($this->structure->fresh()->filled);
+        $this->assertDatabaseCount('stock', 0);
+        $this->assertDatabaseCount('journals', 0);
+    }
+
+    public function test_zero_finalization_preserves_stock_occupancy(): void
+    {
+        foreach ($this->bodies as $body) {
+            $body->update(['quantity' => '0.0000']);
+        }
+        $other = ReceptionBody::create(['header' => $this->header->id, 'product_id' => $this->bodies[0]->product_id]);
+        $this->existingStock($other);
+        $other->update(['header' => $this->otherHeader()->id]);
+        $this->finalize();
+        $this->assertTrue($this->structure->fresh()->filled);
+        $this->assertDatabaseCount('stock', 1);
+        $this->assertDatabaseCount('journals', 0);
+    }
+
+    public function test_zero_finalization_preserves_positive_pending_occupancy(): void
+    {
+        foreach ($this->bodies as $body) {
+            $body->update(['quantity' => '0.0000']);
+        }
+        ReceptionBody::create(['header' => $this->otherHeader()->id,
+            'product_id' => $this->bodies[0]->product_id, 'structure_id' => $this->structure->id,
+            'received' => true, 'quantity' => '0.0001']);
+        $this->finalize();
+        $this->assertTrue($this->structure->fresh()->filled);
+        $this->assertDatabaseCount('stock', 0);
+        $this->assertDatabaseCount('journals', 0);
+    }
+
+    public function test_occupancy_excludes_one_pending_body_and_ignores_finalized_bodies(): void
+    {
+        $occupancy = app(\App\Services\StructureOccupancy::class);
+        $this->bodies[1]->update(['quantity' => '0.0000']);
+        $this->assertTrue($occupancy->isOccupied($this->structure));
+        $this->assertFalse($occupancy->isOccupied($this->structure, $this->bodies[0]->row));
+        $stock = $this->existingStock($this->bodies[0]);
+        $this->bodies[0]->update(['stock_id' => $stock->id]);
+        $destination = $this->secondStructure();
+        $stock->update(['warehouse' => $destination->warehouse, 'hall' => $destination->hall,
+            'position' => $destination->position, 'level' => $destination->level]);
+        $this->assertFalse($occupancy->isOccupied($this->structure));
+        $this->assertTrue($occupancy->isOccupied($destination));
+        $this->assertFalse($occupancy->recalculate($this->structure));
+        $this->assertFalse($this->structure->fresh()->filled);
+    }
+
+    public function test_failure_rolls_back_zero_structure_recalculation(): void
+    {
+        $zeroStructure = $this->secondStructure();
+        $this->bodies[1]->update(['quantity' => '0.0000']);
+        $zeroStructure->update(['filled' => true]);
+        $events = Journal::getEventDispatcher();
+        Journal::setEventDispatcher(clone $events);
+        ReceptionBody::create(['header' => $this->header->id, 'product_id' => $this->bodies[0]->product_id,
+            'quantity' => '1.0000', 'received' => true, 'user_id' => $this->bodies[0]->user_id,
+            'structure_id' => $this->structure->id]);
+        $this->header->update(['rows' => 3]);
+        app(\App\Services\StructureOccupancy::class)->recalculate($this->structure);
+        $count = 0;
+        Journal::creating(function () use (&$count, $zeroStructure) {
+            if (++$count === 2) {
+                $this->assertFalse($zeroStructure->fresh()->filled);
+                throw new RuntimeException('Forced occupancy rollback');
+            }
+        });
+        try {
+            try {
+                $this->finalize();
+                $this->fail('Expected failure');
+            } catch (RuntimeException $exception) {
+                $this->assertSame('Forced occupancy rollback', $exception->getMessage());
+            }
+        } finally {
+            Journal::setEventDispatcher($events);
+        }
+        $this->assertTrue($zeroStructure->fresh()->filled);
+        $this->assertTrue($this->structure->fresh()->filled);
+        $this->assertDatabaseCount('stock', 0);
+        $this->assertDatabaseCount('journals', 0);
+        $this->assertSame(0, ReceptionBody::where('header', $this->header->id)->whereNotNull('stock_id')->count());
+        $this->assertSame('reception in progress', $this->header->fresh()->status);
+    }
+
+    private function otherHeader(): ReceptionHeader
+    {
+        return ReceptionHeader::create(['supplier_id' => $this->header->supplier_id,
+            'xml_nf_header_id' => $this->header->xml_nf_header_id, 'rows' => 1, 'status' => 'reception in progress']);
     }
 
     public static function incompleteFields(): array
@@ -201,6 +302,7 @@ class ReceptionFinalizationTest extends DatabaseTestCase
 
     public function test_failure_on_second_journal_rolls_back_every_write(): void
     {
+        app(\App\Services\StructureOccupancy::class)->recalculate($this->structure);
         $events = Journal::getEventDispatcher();
         Journal::setEventDispatcher(clone $events);
         $count = 0;
@@ -226,6 +328,8 @@ class ReceptionFinalizationTest extends DatabaseTestCase
         $this->assertDatabaseCount('stock', 0);
         $this->assertDatabaseCount('journals', 0);
         $this->assertUnchanged();
+        $this->assertTrue($this->structure->fresh()->filled);
+        $this->assertTrue(app(\App\Services\StructureOccupancy::class)->isOccupied($this->structure));
     }
 
     public function test_manager_delegates_finalization_and_rejects_incomplete_conference(): void

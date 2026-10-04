@@ -35,11 +35,19 @@ class ReceptionFinalizer
                 }
             }
 
+            $occupancy = app(StructureOccupancy::class);
+            $structures = $occupancy->lockStructures($bodies->pluck('structure_id')->all());
+
             foreach ($bodies as $body) {
                 if (BigDecimal::of($body->quantity)->compareTo('0') === 0) {
+                    $structure = $structures->get($body->structure_id);
+                    if ($structure) {
+                        $occupancy->recalculateLocked($structure);
+                    }
+
                     continue;
                 }
-                $structure = $body->Structure()->lockForUpdate()->first();
+                $structure = $structures->get($body->structure_id);
                 if (! $structure || ! $structure->enabled) {
                     throw ValidationException::withMessages(['header' => 'Every positive receipt requires an existing enabled structure.']);
                 }
@@ -75,6 +83,7 @@ class ReceptionFinalizer
                     'position' => $stock->position, 'level' => $stock->level,
                     'immobilized' => $stock->immobilized, 'immob_code' => $stock->immob_code,
                 ]);
+                $occupancy->recalculateLocked($structure);
             }
             $header->update(['status' => 'received']);
         });

@@ -5,14 +5,10 @@ namespace Tests\Feature;
 use App\Livewire\ReceptionBodyManager;
 use App\Models\ReceptionBody;
 use App\Models\ReceptionHeader;
-use App\Models\Stock;
 use App\Models\Structure;
 use App\Models\Supplier;
-use App\Models\Warehouse;
-use App\Models\XmlNfBody;
-use App\Models\XmlNfHeader;
-use App\Models\Journal;
 use App\Models\User;
+use App\Models\Warehouse;
 use App\Services\Nfe\NfeInboundImporter;
 use App\Services\Nfe\NfeInboundParser;
 use Illuminate\Support\Facades\DB;
@@ -22,8 +18,11 @@ use Tests\DatabaseTestCase;
 class ReceptionPhysicalCheckTest extends DatabaseTestCase
 {
     private User $operator;
+
     private ReceptionHeader $reception;
+
     private ReceptionBody $firstItem;
+
     private ReceptionBody $secondItem;
 
     protected function setUp(): void
@@ -71,6 +70,7 @@ class ReceptionPhysicalCheckTest extends DatabaseTestCase
         $structure = $this->structure();
         $this->confirm($this->firstItem, $structure, '0.0000');
         $this->assertSame('0.0000', $this->firstItem->fresh()->quantity);
+        $this->assertFalse($structure->fresh()->filled);
 
         $this->assertValidationFailure($this->secondItem, $structure, '-0.0001', 'quantity');
         $this->assertFalse($this->secondItem->fresh()->received);
@@ -152,7 +152,7 @@ class ReceptionPhysicalCheckTest extends DatabaseTestCase
     public function test_occupied_position_is_rejected_when_warehouse_disallows_multiple(): void
     {
         $structure = $this->structure();
-        $structure->update(['filled' => true]);
+        $this->confirm($this->secondItem, $structure, '1.0000');
 
         $this->componentFor($this->firstItem, $structure, '1.0000')
             ->call('update')
@@ -163,7 +163,7 @@ class ReceptionPhysicalCheckTest extends DatabaseTestCase
     public function test_selected_new_structure_is_checked_instead_of_existing_structure(): void
     {
         $occupied = $this->structure();
-        $occupied->update(['filled' => true]);
+        $this->confirm($this->secondItem, $occupied, '1.0000');
         $this->firstItem->update(['structure_id' => $occupied->id]);
         $available = $this->structure('B');
 
@@ -171,7 +171,7 @@ class ReceptionPhysicalCheckTest extends DatabaseTestCase
 
         $this->assertSame($available->id, $this->firstItem->fresh()->structure_id);
         $this->assertTrue($available->fresh()->filled);
-        $this->assertFalse($occupied->fresh()->filled);
+        $this->assertTrue($occupied->fresh()->filled);
     }
 
     public function test_unconfirm_preserves_item_and_xml_traceability_without_stock_or_journal(): void
@@ -275,6 +275,28 @@ class ReceptionPhysicalCheckTest extends DatabaseTestCase
 
         $this->assertFalse($this->firstItem->fresh()->received);
         $this->assertNull($this->firstItem->fresh()->user_id);
+    }
+
+    public function test_zero_conference_does_not_block_another_receipt_in_single_occupancy_warehouse(): void
+    {
+        $structure = $this->structure();
+        $this->confirm($this->firstItem, $structure, '0.0000');
+        $this->assertFalse($structure->fresh()->filled);
+        $this->confirm($this->secondItem, $structure, '0.0001');
+        $this->assertTrue($structure->fresh()->filled);
+    }
+
+    public function test_unconfirm_and_reassign_recalculate_both_addresses(): void
+    {
+        $old = $this->structure();
+        $new = $this->structure('B');
+        $this->confirm($this->firstItem, $old, '1.0000');
+        Livewire::test(ReceptionBodyManager::class, ['header' => $this->reception->id])
+            ->call('edit', $this->firstItem->row)->set('received', false)->call('update')->assertHasNoErrors();
+        $this->assertFalse($old->fresh()->filled);
+        $this->confirm($this->firstItem, $new, '1.0000');
+        $this->assertFalse($old->fresh()->filled);
+        $this->assertTrue($new->fresh()->filled);
     }
 
     private function confirm(

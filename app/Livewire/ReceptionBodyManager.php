@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models as M;
+use App\Services\StructureOccupancy;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 //{Journal, ReceptionHeader, ReceptionBody, stock, XmlNfHeader, Structure};
@@ -183,14 +184,20 @@ class ReceptionBodyManager  extends Component
             }
 
             DB::transaction(function () use ($receptionBody, $receptionHeader, $structure, $warehouse, $validated): void {
-                $structure = M\Structure::query()->whereKey($structure->id)->lockForUpdate()->firstOrFail();
-                if (!$warehouse->multiple && ($structure->filled || $this->hasOtherOccupancy($structure, $receptionBody->row))) {
+                $receptionHeader = M\ReceptionHeader::query()->whereKey($receptionHeader->id)->lockForUpdate()->firstOrFail();
+                $this->assertHeaderEditable($receptionHeader);
+                $receptionBody = M\ReceptionBody::query()->whereKey($receptionBody->row)->lockForUpdate()->firstOrFail();
+                $occupancy = app(StructureOccupancy::class);
+                $structures = $occupancy->lockStructures([$structure->id, $receptionBody->structure_id]);
+                $structure = $structures->get($structure->id);
+                if (!$structure) {
+                    throw ValidationException::withMessages(['structure_id' => 'Selected structure no longer exists.']);
+                }
+                $oldStructure = $structures->get($receptionBody->structure_id);
+                if (!$warehouse->multiple && $occupancy->isOccupied($structure, $receptionBody->row)) {
                     throw ValidationException::withMessages(['structure_id' => 'This position is already occupied.']);
                 }
 
-                $oldStructure = $receptionBody->structure_id
-                    ? M\Structure::query()->whereKey($receptionBody->structure_id)->lockForUpdate()->first()
-                    : null;
                 $receptionBody->update([
                     'batch' => $validated['batch'] ?? null,
                     'quantity' => $validated['quantity'],
@@ -200,9 +207,9 @@ class ReceptionBodyManager  extends Component
                     'user_id' => auth()->id(),
                     'received' => true,
                 ]);
-                $structure->update(['filled' => true]);
+                app(StructureOccupancy::class)->recalculateLocked($structure);
                 if ($oldStructure && $oldStructure->isNot($structure)) {
-                    $oldStructure->update(['filled' => $this->hasOtherOccupancy($oldStructure, $receptionBody->row)]);
+                    app(StructureOccupancy::class)->recalculateLocked($oldStructure);
                 }
                 $receptionHeader->update(['status' => 'reception in progress']);
             });
@@ -212,13 +219,14 @@ class ReceptionBodyManager  extends Component
             }
 
             DB::transaction(function () use ($receptionBody): void {
+                $header = M\ReceptionHeader::query()->whereKey($receptionBody->header)->lockForUpdate()->firstOrFail();
+                $this->assertHeaderEditable($header);
                 $receptionBody = M\ReceptionBody::query()->whereKey($receptionBody->row)->lockForUpdate()->firstOrFail();
-                $oldStructure = $receptionBody->structure_id
-                    ? M\Structure::query()->whereKey($receptionBody->structure_id)->lockForUpdate()->first()
-                    : null;
+                $occupancy = app(StructureOccupancy::class);
+                $oldStructure = $occupancy->lockStructures([$receptionBody->structure_id])->get($receptionBody->structure_id);
                 $receptionBody->update(['received' => false]);
                 if ($oldStructure) {
-                    $oldStructure->update(['filled' => $this->hasOtherOccupancy($oldStructure, $receptionBody->row)]);
+                    app(StructureOccupancy::class)->recalculateLocked($oldStructure);
                 }
             });
         }
@@ -233,22 +241,6 @@ class ReceptionBodyManager  extends Component
         if (!$header || !$header->enabled || in_array($header->status, ['received', 'canceled', 'on hold'], true)) {
             throw ValidationException::withMessages(['header' => 'This reception cannot be edited in its current state.']);
         }
-    }
-
-    private function hasOtherOccupancy(M\Structure $structure, int $exceptReceptionRow): bool
-    {
-        $pendingReceptionOccupancy = M\ReceptionBody::query()
-            ->where('structure_id', $structure->id)
-            ->where('received', true)
-            ->where('row', '!=', $exceptReceptionRow)
-            ->exists();
-
-        return $pendingReceptionOccupancy || M\Stock::query()
-            ->where('warehouse', $structure->warehouse)
-            ->where('hall', $structure->hall)
-            ->where('position', $structure->position)
-            ->where('level', $structure->level)
-            ->exists();
     }
 
     /**

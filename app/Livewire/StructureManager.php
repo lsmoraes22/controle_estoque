@@ -22,7 +22,6 @@ class StructureManager extends Component
         'hall' => 'required|integer',
         'position' => 'required|integer',
         'level' => 'required|integer',
-        'filled' => 'boolean',
         'immobilized' => 'boolean',
         'enabled' => 'boolean',
     ];
@@ -66,7 +65,7 @@ class StructureManager extends Component
             'hall' => $this->hall,
             'position' => $this->position,
             'level' => $this->level,
-            'filled' => $this->filled,
+            'filled' => false,
             'immobilized' => $this->immobilized,
             'enabled' => $this->enabled,
         ]);
@@ -93,11 +92,10 @@ class StructureManager extends Component
     {
         $this->validate();
 
-        $structure = M\Structure::where('id', $this->id)
+        $structure = M\Structure::where('id', $this->structureId)
             ->firstOrFail();
 
         $structure->update([
-            'filled' => $this->filled,
             'immobilized' => $this->immobilized,
             'enabled' => $this->enabled,
         ]);
