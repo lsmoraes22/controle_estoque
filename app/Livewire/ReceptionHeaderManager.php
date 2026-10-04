@@ -196,50 +196,7 @@ class ReceptionHeaderManager extends Component
     }
     private function updateStatusReceived($header)
     {
-        $receptionHeader = M\ReceptionHeader::findOrFail($header);
-        $rowsBody = M\ReceptionBody::where(['header' => $header, 'received' => true])->get();
-        $contRowsBody = count($rowsBody);
-        if($contRowsBody<$receptionHeader->rows) return $this->toConfirmLowerReception($receptionHeader->id) ;
-        $receptionHeader->update([ 'status' => 'received' ]);
-        foreach($rowsBody as $row){
-            $stockAdd = [
-                'reception_id'  => $row->row,
-                'product_id'    => $row->product_id,
-                'supplier_id'   => $receptionHeader->supplier_id,
-                'fabrication'   => $row->fabrication,
-                'validity'      => $row->validity,
-                'batch'         => $row->batch,
-                'status'        => 'to store',
-                'quantity'      => $row->quantity,
-                'theoretical'   => $row->theoretical,
-                'immobilized'   => false,
-                'immob_code'    => null,
-                'warehouse'     => substr($row->structure->id, 0, 1),
-                'hall'          => substr($row->structure->id, 1, 6),
-                'position'      => substr($row->structure->id, 7, 6),
-                'level'         => substr($row->structure->id, 13, 4)
-            ];
-            $stock = M\Stock::create($stockAdd);
-            $rowsBodyUd = M\ReceptionBody::findOrFail($row->row);
-            $rowsBodyUd->update(['stock_id' => $stock->id]);
-            M\Journal::create([
-                'action'        => 'INS',
-                'code'          => 'REC',
-                'moreless'      => '+',
-                'user_id'       => $row->user_id,
-                'stock_id'      => $stock->id,
-                'product_id'    => $stock->product_id,
-                'fabrication'   => $stock->fabrication,
-                'validity'      => $stock->validity,
-                'batch'         => $stock->batch,
-                'warehouse'     => $stock->warehouse,
-                'hall'          => $stock->hall,
-                'position'      => $stock->position,
-                'level'         => $stock->level,
-                'immobilized'   => $stock->immobilized,
-                'immob_code'    => $stock->immob_code,
-            ]);
-        }
+        app(\App\Services\ReceptionFinalizer::class)->finalize((int) $header);
         session()->flash('message', 'Reception realized successfully.');
         $this->resetFields();
     }

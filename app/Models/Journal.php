@@ -8,8 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Journal extends Model
 {
     use HasFactory;
+
+    protected $casts = ['quantity' => 'decimal:4'];
+
     public $timestamps = false;
+
     protected $fillable = [
+        'quantity',
         'action',
         'code',
         'moreless',
@@ -24,6 +29,6 @@ class Journal extends Model
         'position',
         'level',
         'immobilized',
-        'immob_code'
+        'immob_code',
     ];
 }

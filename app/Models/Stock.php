@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Stock extends Model
 {
     use HasFactory;
+
+    protected $casts = ['quantity' => 'decimal:4'];
+
     protected $table = 'stock';
+
     protected $fillable = [
         'reception_id',
         'product_id',
@@ -23,7 +27,6 @@ class Stock extends Model
         'warehouse',
         'hall',
         'position',
-        'level'
+        'level',
     ];
-
 }
