@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
         Route::get('/nfe_xml_default', Wire\NfeXmlDefault::class)->name('nfe_xml_default.index')->middleware(M\CheckSectorPermission::class );
         Route::get('/xml_rules', Wire\RulesEditor::class)->name('xml_rules.index')->middleware(M\CheckSectorPermission::class );
         Route::get('/products', Wire\ProductManager::class)->name('products.index')->middleware(M\CheckSectorPermission::class );
+        Route::get('/stocks', Wire\StockManager::class)->name('stocks.index')->middleware(M\CheckSectorPermission::class);
         Route::get('/warehouses', Wire\WarehouseManager::class)->name('warehouses.index')->middleware(M\CheckSectorPermission::class );
         Route::get('/structures', Wire\StructureManager::class)->name('structures.index')->middleware(M\CheckSectorPermission::class );
         Route::get('/receptions', Wire\ReceptionHeaderManager::class)->name('receptions.index')->middleware(M\CheckSectorPermission::class );
