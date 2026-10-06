@@ -15,6 +15,7 @@ class Stock extends Model
 
     protected $fillable = [
         'reception_id',
+        'origin_stock_id',
         'product_id',
         'supplier_id',
         'fabrication',
@@ -38,6 +39,11 @@ class Stock extends Model
     public function supplier()
     {
         return $this->belongsTo(Supplier::class, 'supplier_id');
+    }
+
+    public function originStock()
+    {
+        return $this->belongsTo(self::class, 'origin_stock_id');
     }
 
     public function receptionBody()

@@ -225,6 +225,22 @@ class ReceptionFinalizationTest extends DatabaseTestCase
             'xml_nf_header_id' => $this->header->xml_nf_header_id, 'rows' => 1, 'status' => 'reception in progress']);
     }
 
+    public function test_finalization_acquires_global_lock_hierarchy_before_processing(): void
+    {
+        \Illuminate\Support\Facades\DB::flushQueryLog();
+        \Illuminate\Support\Facades\DB::enableQueryLog();
+        try {
+            $this->finalize();
+            $locks = collect(\Illuminate\Support\Facades\DB::getQueryLog())
+                ->filter(fn ($q) => str_contains($q['query'], 'for update'))->values();
+            foreach (['warehouses', 'structures', 'reception_headers', 'reception_body', 'stock'] as $i => $table) {
+                $this->assertStringContainsString($table, $locks[$i]['query']);
+            }
+        } finally {
+            \Illuminate\Support\Facades\DB::disableQueryLog();
+        }
+    }
+
     public static function incompleteFields(): array
     {
         return [['received', false], ['quantity', null], ['user_id', null], ['structure_id', null], ['quantity', '-0.0001']];

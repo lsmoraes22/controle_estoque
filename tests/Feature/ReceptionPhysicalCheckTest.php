@@ -299,6 +299,22 @@ class ReceptionPhysicalCheckTest extends DatabaseTestCase
         $this->assertTrue($new->fresh()->filled);
     }
 
+    public function test_conference_acquires_global_lock_hierarchy_before_occupancy_decision(): void
+    {
+        $structure = $this->structure();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        try {
+            $this->confirm($this->firstItem, $structure, '1.0000');
+            $locks = collect(DB::getQueryLog())->filter(fn ($q) => str_contains($q['query'], 'for update'))->values();
+            foreach (['warehouses', 'structures', 'reception_headers', 'reception_body', 'stock'] as $i => $table) {
+                $this->assertStringContainsString($table, $locks[$i]['query']);
+            }
+        } finally {
+            DB::disableQueryLog();
+        }
+    }
+
     private function confirm(
         ReceptionBody $item,
         Structure $structure,

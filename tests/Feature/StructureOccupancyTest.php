@@ -54,7 +54,9 @@ class StructureOccupancyTest extends DatabaseTestCase
         $structure = Structure::create(['id' => 'Q-lock', 'warehouse' => 'Q', 'hall' => 1,
             'position' => 1, 'level' => 1, 'filled' => true]);
         $occupancy = app(StructureOccupancy::class);
-        $locked = $occupancy->lockStructures([$structure->id])->get($structure->id);
+        $structures = $occupancy->lockStructures([$structure->id]);
+        $occupancy->lockOccupants($structures);
+        $locked = $structures->get($structure->id);
         DB::flushQueryLog();
         DB::enableQueryLog();
         try {
@@ -67,6 +69,24 @@ class StructureOccupancyTest extends DatabaseTestCase
             DB::disableQueryLog();
         }
         $this->assertFalse($structure->fresh()->filled);
+    }
+
+    public function test_standalone_recalculation_follows_global_hierarchy(): void
+    {
+        Warehouse::create(['warehouse' => 'Q', 'enabled' => true]);
+        $structure = Structure::create(['id' => 'Q-order', 'warehouse' => 'Q', 'hall' => 1,
+            'position' => 1, 'level' => 1]);
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        try {
+            app(StructureOccupancy::class)->recalculate($structure);
+            $locks = collect(DB::getQueryLog())->filter(fn ($q) => str_contains($q['query'], 'for update'))->values();
+            foreach (['warehouses', 'structures', 'reception_body', 'stock'] as $i => $table) {
+                $this->assertStringContainsString($table, $locks[$i]['query']);
+            }
+        } finally {
+            DB::disableQueryLog();
+        }
     }
 
     public static function filledStates(): array

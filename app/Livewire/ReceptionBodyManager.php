@@ -184,17 +184,25 @@ class ReceptionBodyManager  extends Component
             }
 
             DB::transaction(function () use ($receptionBody, $receptionHeader, $structure, $warehouse, $validated): void {
-                $receptionHeader = M\ReceptionHeader::query()->whereKey($receptionHeader->id)->lockForUpdate()->firstOrFail();
-                $this->assertHeaderEditable($receptionHeader);
-                $receptionBody = M\ReceptionBody::query()->whereKey($receptionBody->row)->lockForUpdate()->firstOrFail();
                 $occupancy = app(StructureOccupancy::class);
                 $structures = $occupancy->lockStructures([$structure->id, $receptionBody->structure_id]);
+                $receptionHeader = M\ReceptionHeader::query()->whereKey($receptionHeader->id)->lockForUpdate()->firstOrFail();
+                $occupancy->lockOccupants($structures, null, [$receptionBody->row]);
+                $this->assertHeaderEditable($receptionHeader);
+                $receptionBody = M\ReceptionBody::query()->whereKey($receptionBody->row)->lockForUpdate()->firstOrFail();
+                if ($receptionBody->structure_id !== null && !$structures->has($receptionBody->structure_id)) {
+                    throw ValidationException::withMessages(['structure_id' => 'Reception address changed during lock discovery.']);
+                }
                 $structure = $structures->get($structure->id);
                 if (!$structure) {
                     throw ValidationException::withMessages(['structure_id' => 'Selected structure no longer exists.']);
                 }
+                $warehouse = $structure->warehouseModel()->lockForUpdate()->first();
+                if (!$structure->enabled || !$warehouse || !$warehouse->enabled) {
+                    throw ValidationException::withMessages(['structure_id' => 'Selected address is disabled or missing.']);
+                }
                 $oldStructure = $structures->get($receptionBody->structure_id);
-                if (!$warehouse->multiple && $occupancy->isOccupied($structure, $receptionBody->row)) {
+                if (!$warehouse->multiple && $occupancy->isOccupiedLocked($structure, $receptionBody->row)) {
                     throw ValidationException::withMessages(['structure_id' => 'This position is already occupied.']);
                 }
 
@@ -219,11 +227,16 @@ class ReceptionBodyManager  extends Component
             }
 
             DB::transaction(function () use ($receptionBody): void {
+                $occupancy = app(StructureOccupancy::class);
+                $structures = $occupancy->lockStructures([$receptionBody->structure_id]);
                 $header = M\ReceptionHeader::query()->whereKey($receptionBody->header)->lockForUpdate()->firstOrFail();
+                $occupancy->lockOccupants($structures, null, [$receptionBody->row]);
                 $this->assertHeaderEditable($header);
                 $receptionBody = M\ReceptionBody::query()->whereKey($receptionBody->row)->lockForUpdate()->firstOrFail();
-                $occupancy = app(StructureOccupancy::class);
-                $oldStructure = $occupancy->lockStructures([$receptionBody->structure_id])->get($receptionBody->structure_id);
+                if ($receptionBody->structure_id !== null && !$structures->has($receptionBody->structure_id)) {
+                    throw ValidationException::withMessages(['structure_id' => 'Reception address changed during lock discovery.']);
+                }
+                $oldStructure = $structures->get($receptionBody->structure_id);
                 $receptionBody->update(['received' => false]);
                 if ($oldStructure) {
                     app(StructureOccupancy::class)->recalculateLocked($oldStructure);

@@ -15,7 +15,11 @@ class ReceptionFinalizer
     public function finalize(int $headerId): void
     {
         DB::transaction(function () use ($headerId) {
+            $occupancy = app(StructureOccupancy::class);
+            $discovered = ReceptionBody::where('header', $headerId)->get();
+            $structures = $occupancy->lockStructures($discovered->pluck('structure_id')->all());
             $header = ReceptionHeader::query()->lockForUpdate()->findOrFail($headerId);
+            $occupancy->lockOccupants($structures, $headerId);
             if (! $header->enabled || $header->status !== 'reception in progress') {
                 throw ValidationException::withMessages(['header' => 'Only an enabled reception in progress may be finalized.']);
             }
@@ -35,8 +39,11 @@ class ReceptionFinalizer
                 }
             }
 
-            $occupancy = app(StructureOccupancy::class);
-            $structures = $occupancy->lockStructures($bodies->pluck('structure_id')->all());
+            foreach ($bodies as $body) {
+                if (! $structures->has($body->structure_id)) {
+                    throw ValidationException::withMessages(['header' => 'Reception structures changed during lock discovery.']);
+                }
+            }
 
             foreach ($bodies as $body) {
                 if (BigDecimal::of($body->quantity)->compareTo('0') === 0) {
